@@ -5,6 +5,8 @@
 		domains,
 		domainLabels,
 		domainColors,
+		readyCount,
+		totalCount,
 		type Domain,
 		type Project
 	} from '$lib/data/projects';
@@ -34,6 +36,9 @@
 			<p class="hero-description">
 				Interactive code exploration for {projectCount} projects across {domainCount} domains
 			</p>
+			<div class="stats-counter">
+				<span class="stats-ready">{readyCount}</span> of {totalCount} projects ready
+			</div>
 		</div>
 	</header>
 
@@ -101,7 +106,7 @@
 								GitHub
 							</a>
 							{#if project.status === 'ready'}
-								<a href="{base}/projects/{project.slug}/" class="card-link learn-link">
+								<a href={project.learnUrl} class="card-link learn-link">
 									Start Learning
 								</a>
 							{:else}
@@ -197,6 +202,23 @@
 		font-size: 0.95rem;
 		color: #64748b;
 		font-family: 'JetBrains Mono', monospace;
+	}
+
+	.stats-counter {
+		display: inline-block;
+		margin-top: 1.25rem;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.85rem;
+		color: #94a3b8;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 100px;
+		padding: 0.4rem 1.2rem;
+	}
+
+	.stats-ready {
+		color: #10b981;
+		font-weight: 700;
 	}
 
 	/* Filters */
