@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>legged_gym — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>legged_gym</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **23 files** with **187 symbols** across **2673 lines of code**, written in **python**.
+
+The codebase is organized into **13 functional modules** (automatically detected communities) with **23 entry points**.
+
+### Modules at a Glance
+
+- **Misc** — 88 symbols (cohesion: 0%)
+- **Log Args** — 29 symbols (cohesion: 11%)
+- **Cfg Anymal Classes** — 28 symbols (cohesion: 8%)
+- **Compute Step** — 23 symbols (cohesion: 9%)
+- **Terrain Randomized** — 8 symbols (cohesion: 33%)
+- **Reset** — 3 symbols (cohesion: 67%)
+- **Init Member** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `commands` — CLI pattern, zero callers
+- `commands` — CLI pattern, zero callers</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`commands`** (Class)</code> — CLI pattern, zero callers *(score: 0.8)*</li>
+            
+                <li><code>**`commands`** (Class)</code> — CLI pattern, zero callers *(score: 0.8)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers *(score: 0.7)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers *(score: 0.7)*</li>
+            
+                <li><code>**`_resample_commands`** (Function)</code> — CLI pattern *(score: 0.6)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **187 symbols** connected by **128 relationships** across **13 modules**.
+
+### Relationship Types
+
+- **104** function calls
+- **15** inheritance relationships
+- **9** import dependencies
+
+### Module Hierarchy
+
+- **Misc** (88 symbols) — includes: `rewards`, `reset`, `_reward_stumble`
+- **Log Args** (29 symbols) — includes: `log_states`, `test_env`, `get_observations`
+- **Cfg Anymal Classes** (28 symbols) — includes: `CassieRoughCfg`, `_create_envs`, `BaseConfig`
+- **Compute Step** (23 symbols) — includes: `render`, `compute_observations`, `_compute_torques`
+- **Terrain Randomized** (8 symbols) — includes: `gap_terrain`, `pit_terrain`, `randomized_terrain`
+- **Reset** (3 symbols) — includes: `reset`, `step`, `reset_idx`
+- **Init Member** (2 symbols) — includes: `__init__`, `init_member_classes`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `LeggedRobotCfg` (Class) — used by 8 other symbols
+- `class_to_dict` (Function) — used by 7 other symbols
+- `get_args` (Function) — used by 5 other symbols
+- `quat_apply_yaw` (Function) — used by 4 other symbols
+- `get_cfgs` (Function) — used by 4 other symbols
+- `add_terrain_to_map` (Function) — used by 3 other symbols
+- `make_env` (Function) — used by 3 other symbols
+- `LeggedRobotCfgPPO` (Class) — used by 3 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 88 symbols, cohesion 0%
+- **Cfg Anymal Classes** — 28 symbols, cohesion 8%
+- **Compute Step** — 23 symbols, cohesion 9%
+- **Log Args** — 29 symbols, cohesion 11%
+- **Terrain Randomized** — 8 symbols, cohesion 33%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 23 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">23</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">2673</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">187</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">4.2</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/scripts/play.py</code></div>
+                <div class="card-meta">complexity: 17.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/utils/terrain.py</code></div>
+                <div class="card-meta">complexity: 10.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/utils/task_registry.py</code></div>
+                <div class="card-meta">complexity: 9.4 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_config.py</code></div>
+                <div class="card-meta">complexity: 8.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/anymal.py</code></div>
+                <div class="card-meta">complexity: 7.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_task.py</code></div>
+                <div class="card-meta">complexity: 6.8 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/utils/logger.py</code></div>
+                <div class="card-meta">complexity: 6.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/utils/helpers.py</code></div>
+                <div class="card-meta">complexity: 5.6 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/legged_robot.py</code></div>
+                <div class="card-meta">complexity: 5.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/legged_gym/legged_gym/tests/test_env.py</code></div>
+                <div class="card-meta">complexity: 3.0 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (13)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">88 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **88 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `rewards`
+- `asset`
+- `domain_rand`
+- `control`
+- `terrain`
+- `algorithm`
+- `rewards`
+- `rewards`
+- `env`
+- `asset`
+- `env`
+- `normalization`
+- `scales`
+- `control`
+- `runner`
+- `algorithm`
+- `algorithm`
+- `scales`
+- `rewards`
+- `runner`
+- `scales`
+- `runner`
+- `asset`
+- `runner`
+- `init_state`
+- `asset`
+- `scales`
+- `asset`
+- `noise`
+- `init_state`
+- `rewards`
+- `domain_rand`
+- `policy`
+- `init_state`
+- `noise_scales`
+- `rewards`
+- `terrain`
+- `runner`
+- `algorithm`
+- `sim`
+- `control`
+- `scales`
+- `domain_rand`
+- `commands`
+- `env`
+- `ranges`
+- `viewer`
+- `ranges`
+- `terrain`
+- `env`
+- `terrain`
+- `control`
+- `init_state`
+- `asset`
+- `obs_scales`
+- `commands`
+- `runner`
+- `physx`
+- `scales`
+
+### Functions
+
+- `reset`
+- `_reward_stumble`
+- `_reward_dof_pos_limits`
+- `reset_memory`
+- `_reward_tracking_lin_vel`
+- `__del__`
+- `_reward_orientation`
+- `__init__`
+- `__init__`
+- `_reward_torques`
+- ...and 19 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, register, __init__, reset, _plot</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">log_args</div>
+                        <div class="card-meta">29 symbols</div>
+                        <p>## Module: Log Args
+
+This module contains **29 symbols** with a cohesion score of **11%** and **4 external connections**.
+
+### Types
+
+- `TaskRegistry`
+- `Logger`
+- `policy`
+
+### Functions
+
+- `log_states`
+- `test_env`
+- `get_observations`
+- `_init_buffers`
+- `print_rewards`
+- `_init_height_points`
+- `train`
+- `_parse_cfg`
+- `play`
+- `get_load_path`
+- ...and 16 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: test_env, TaskRegistry, get_task_class, get_cfgs, make_env</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">cfg_anymal_classes</div>
+                        <div class="card-meta">28 symbols</div>
+                        <p>## Module: Cfg Anymal Classes
+
+This module contains **28 symbols** with a cohesion score of **8%** and **2 external connections**.
+
+### Types
+
+- `CassieRoughCfg`
+- `BaseConfig`
+- `BaseTask`
+- `CassieRoughCfgPPO`
+- `A1RoughCfgPPO`
+- `AnymalCRoughCfg`
+- `LeggedRobotCfg`
+- `AnymalCFlatCfgPPO`
+- `LeggedRobot`
+- `AnymalCFlatCfg`
+- `Cassie`
+- `AnymalBRoughCfgPPO`
+- `A1RoughCfg`
+- `LeggedRobotCfgPPO`
+- `Anymal`
+- `Terrain`
+- `AnymalBRoughCfg`
+- `AnymalCRoughCfgPPO`
+
+### Functions
+
+- `_create_envs`
+- `_create_trimesh`
+- `_create_ground_plane`
+- `__init__`
+- `_process_rigid_body_props`
+- `_create_heightfield`
+- `_process_dof_props`
+- `_process_rigid_shape_props`
+- `_get_env_origins`
+- `create_sim`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Terrain, Cassie, CassieRoughCfg, CassieRoughCfgPPO, AnymalCFlatCfg</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">compute_step</div>
+                        <div class="card-meta">23 symbols</div>
+                        <p>## Module: Compute Step
+
+This module contains **23 symbols** with a cohesion score of **9%** and **0 external connections**.
+
+### Types
+
+- `PolicyExporterLSTM`
+
+### Functions
+
+- `render`
+- `compute_observations`
+- `_compute_torques`
+- `_post_physics_step_callback`
+- `_draw_debug_vis`
+- `step`
+- `compute_reward`
+- `reset_idx`
+- `update_command_curriculum`
+- `export_policy_as_jit`
+- ...and 12 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: quat_apply_yaw, wrap_to_pi, export_policy_as_jit, PolicyExporterLSTM, export</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">terrain_randomized</div>
+                        <div class="card-meta">8 symbols</div>
+                        <p>## Module: Terrain Randomized
+
+This module contains **8 symbols** with a cohesion score of **33%** and **0 external connections**.
+
+### Functions
+
+- `gap_terrain`
+- `pit_terrain`
+- `randomized_terrain`
+- `__init__`
+- `add_terrain_to_map`
+- `make_terrain`
+- `curiculum`
+- `selected_terrain`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, randomized_terrain, curiculum, selected_terrain, make_terrain</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">reset</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Reset
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `reset`
+- `step`
+- `reset_idx`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset_idx, reset, step</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_member</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Init Member
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `init_member_classes`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, init_member_classes</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">class_dict</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Class Dict
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `update_class_from_dict`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: update_class_from_dict</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_9</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 9
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_10</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 10
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">buffers</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Buffers
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `_init_buffers`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _init_buffers</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">idx_reset</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Idx Reset
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `reset_idx`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset_idx</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">compute_torques</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Compute Torques
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `_compute_torques`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _compute_torques</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (18)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'make_alg_runner' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_plot' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'play' is 72 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_init_buffers' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_create_envs' is 85 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 59 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 52 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 22 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/legged_gym/legged_gym/__init__.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/__init__.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/a1/a1_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_b/anymal_b_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/anymal.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/flat/anymal_c_flat_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/mixed_terrains/anymal_c_rough_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_task.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/legged_robot.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/legged_robot_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/cassie/cassie.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/cassie/cassie_config.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/scripts/play.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/scripts/train.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/tests/test_env.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/__init__.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/helpers.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/logger.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/math.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/task_registry.py
+├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/terrain.py
+└── /Users/bm/carokia-repos/legged_gym/setup.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 09:24 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"legged_gym","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **23 files** with **187 symbols** across **2673 lines of code**, written in **python**.\n\nThe codebase is organized into **13 functional modules** (automatically detected communities) with **23 entry points**.\n\n### Modules at a Glance\n\n- **Misc** — 88 symbols (cohesion: 0%)\n- **Log Args** — 29 symbols (cohesion: 11%)\n- **Cfg Anymal Classes** — 28 symbols (cohesion: 8%)\n- **Compute Step** — 23 symbols (cohesion: 9%)\n- **Terrain Randomized** — 8 symbols (cohesion: 33%)\n- **Reset** — 3 symbols (cohesion: 67%)\n- **Init Member** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `commands` — CLI pattern, zero callers\n- `commands` — CLI pattern, zero callers","architecture_mermaid":"","reading_order":[{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`commands`** (Class)","reason":"CLI pattern, zero callers *(score: 0.8)*","language":""},{"path":"**`commands`** (Class)","reason":"CLI pattern, zero callers *(score: 0.8)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers *(score: 0.7)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers *(score: 0.7)*","language":""},{"path":"**`_resample_commands`** (Function)","reason":"CLI pattern *(score: 0.6)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **187 symbols** connected by **128 relationships** across **13 modules**.\n\n### Relationship Types\n\n- **104** function calls\n- **15** inheritance relationships\n- **9** import dependencies\n\n### Module Hierarchy\n\n- **Misc** (88 symbols) — includes: `rewards`, `reset`, `_reward_stumble`\n- **Log Args** (29 symbols) — includes: `log_states`, `test_env`, `get_observations`\n- **Cfg Anymal Classes** (28 symbols) — includes: `CassieRoughCfg`, `_create_envs`, `BaseConfig`\n- **Compute Step** (23 symbols) — includes: `render`, `compute_observations`, `_compute_torques`\n- **Terrain Randomized** (8 symbols) — includes: `gap_terrain`, `pit_terrain`, `randomized_terrain`\n- **Reset** (3 symbols) — includes: `reset`, `step`, `reset_idx`\n- **Init Member** (2 symbols) — includes: `__init__`, `init_member_classes`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `LeggedRobotCfg` (Class) — used by 8 other symbols\n- `class_to_dict` (Function) — used by 7 other symbols\n- `get_args` (Function) — used by 5 other symbols\n- `quat_apply_yaw` (Function) — used by 4 other symbols\n- `get_cfgs` (Function) — used by 4 other symbols\n- `add_terrain_to_map` (Function) — used by 3 other symbols\n- `make_env` (Function) — used by 3 other symbols\n- `LeggedRobotCfgPPO` (Class) — used by 3 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 88 symbols, cohesion 0%\n- **Cfg Anymal Classes** — 28 symbols, cohesion 8%\n- **Compute Step** — 23 symbols, cohesion 9%\n- **Log Args** — 29 symbols, cohesion 11%\n- **Terrain Randomized** — 8 symbols, cohesion 33%","why_trending":"## Why This Project\n\nThis project is written in python with 23 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":23,"total_sloc":2673,"total_symbols":187,"avg_complexity":4.17038517038517,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/scripts/play.py","heatmap_score":0.0,"complexity":17.0,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/utils/terrain.py","heatmap_score":0.0,"complexity":10.333333333333334,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/utils/task_registry.py","heatmap_score":0.0,"complexity":9.428571428571429,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_config.py","heatmap_score":0.0,"complexity":8.0,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/anymal.py","heatmap_score":0.0,"complexity":7.2,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_task.py","heatmap_score":0.0,"complexity":6.75,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/utils/logger.py","heatmap_score":0.0,"complexity":6.3,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/utils/helpers.py","heatmap_score":0.0,"complexity":5.615384615384615,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/legged_robot.py","heatmap_score":0.0,"complexity":5.211538461538462,"churn":0},{"path":"/Users/bm/carokia-repos/legged_gym/legged_gym/tests/test_env.py","heatmap_score":0.0,"complexity":3.0,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/legged_gym/legged_gym/__init__.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/__init__.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/a1/a1_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_b/anymal_b_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/anymal.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/flat/anymal_c_flat_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/anymal_c/mixed_terrains/anymal_c_rough_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/base_task.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/legged_robot.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/base/legged_robot_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/cassie/cassie.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/envs/cassie/cassie_config.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/scripts/play.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/scripts/train.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/tests/test_env.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/__init__.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/helpers.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/logger.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/math.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/task_registry.py\n├── /Users/bm/carokia-repos/legged_gym/legged_gym/utils/terrain.py\n└── /Users/bm/carokia-repos/legged_gym/setup.py","communities":[{"label":"misc","summary":"## Module: Misc\n\nThis module contains **88 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `rewards`\n- `asset`\n- `domain_rand`\n- `control`\n- `terrain`\n- `algorithm`\n- `rewards`\n- `rewards`\n- `env`\n- `asset`\n- `env`\n- `normalization`\n- `scales`\n- `control`\n- `runner`\n- `algorithm`\n- `algorithm`\n- `scales`\n- `rewards`\n- `runner`\n- `scales`\n- `runner`\n- `asset`\n- `runner`\n- `init_state`\n- `asset`\n- `scales`\n- `asset`\n- `noise`\n- `init_state`\n- `rewards`\n- `domain_rand`\n- `policy`\n- `init_state`\n- `noise_scales`\n- `rewards`\n- `terrain`\n- `runner`\n- `algorithm`\n- `sim`\n- `control`\n- `scales`\n- `domain_rand`\n- `commands`\n- `env`\n- `ranges`\n- `viewer`\n- `ranges`\n- `terrain`\n- `env`\n- `terrain`\n- `control`\n- `init_state`\n- `asset`\n- `obs_scales`\n- `commands`\n- `runner`\n- `physx`\n- `scales`\n\n### Functions\n\n- `reset`\n- `_reward_stumble`\n- `_reward_dof_pos_limits`\n- `reset_memory`\n- `_reward_tracking_lin_vel`\n- `__del__`\n- `_reward_orientation`\n- `__init__`\n- `__init__`\n- `_reward_torques`\n- ...and 19 more","member_count":88,"key_symbols":["__init__","register","__init__","reset","_plot"]},{"label":"log_args","summary":"## Module: Log Args\n\nThis module contains **29 symbols** with a cohesion score of **11%** and **4 external connections**.\n\n### Types\n\n- `TaskRegistry`\n- `Logger`\n- `policy`\n\n### Functions\n\n- `log_states`\n- `test_env`\n- `get_observations`\n- `_init_buffers`\n- `print_rewards`\n- `_init_height_points`\n- `train`\n- `_parse_cfg`\n- `play`\n- `get_load_path`\n- ...and 16 more","member_count":29,"key_symbols":["test_env","TaskRegistry","get_task_class","get_cfgs","make_env"]},{"label":"cfg_anymal_classes","summary":"## Module: Cfg Anymal Classes\n\nThis module contains **28 symbols** with a cohesion score of **8%** and **2 external connections**.\n\n### Types\n\n- `CassieRoughCfg`\n- `BaseConfig`\n- `BaseTask`\n- `CassieRoughCfgPPO`\n- `A1RoughCfgPPO`\n- `AnymalCRoughCfg`\n- `LeggedRobotCfg`\n- `AnymalCFlatCfgPPO`\n- `LeggedRobot`\n- `AnymalCFlatCfg`\n- `Cassie`\n- `AnymalBRoughCfgPPO`\n- `A1RoughCfg`\n- `LeggedRobotCfgPPO`\n- `Anymal`\n- `Terrain`\n- `AnymalBRoughCfg`\n- `AnymalCRoughCfgPPO`\n\n### Functions\n\n- `_create_envs`\n- `_create_trimesh`\n- `_create_ground_plane`\n- `__init__`\n- `_process_rigid_body_props`\n- `_create_heightfield`\n- `_process_dof_props`\n- `_process_rigid_shape_props`\n- `_get_env_origins`\n- `create_sim`","member_count":28,"key_symbols":["Terrain","Cassie","CassieRoughCfg","CassieRoughCfgPPO","AnymalCFlatCfg"]},{"label":"compute_step","summary":"## Module: Compute Step\n\nThis module contains **23 symbols** with a cohesion score of **9%** and **0 external connections**.\n\n### Types\n\n- `PolicyExporterLSTM`\n\n### Functions\n\n- `render`\n- `compute_observations`\n- `_compute_torques`\n- `_post_physics_step_callback`\n- `_draw_debug_vis`\n- `step`\n- `compute_reward`\n- `reset_idx`\n- `update_command_curriculum`\n- `export_policy_as_jit`\n- ...and 12 more","member_count":23,"key_symbols":["quat_apply_yaw","wrap_to_pi","export_policy_as_jit","PolicyExporterLSTM","export"]},{"label":"terrain_randomized","summary":"## Module: Terrain Randomized\n\nThis module contains **8 symbols** with a cohesion score of **33%** and **0 external connections**.\n\n### Functions\n\n- `gap_terrain`\n- `pit_terrain`\n- `randomized_terrain`\n- `__init__`\n- `add_terrain_to_map`\n- `make_terrain`\n- `curiculum`\n- `selected_terrain`","member_count":8,"key_symbols":["__init__","randomized_terrain","curiculum","selected_terrain","make_terrain"]},{"label":"reset","summary":"## Module: Reset\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `reset`\n- `step`\n- `reset_idx`","member_count":3,"key_symbols":["reset_idx","reset","step"]},{"label":"init_member","summary":"## Module: Init Member\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `init_member_classes`","member_count":2,"key_symbols":["__init__","init_member_classes"]},{"label":"class_dict","summary":"## Module: Class Dict\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `update_class_from_dict`","member_count":1,"key_symbols":["update_class_from_dict"]},{"label":"group_9","summary":"## Module: Group 9\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]},{"label":"group_10","summary":"## Module: Group 10\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]},{"label":"buffers","summary":"## Module: Buffers\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `_init_buffers`","member_count":1,"key_symbols":["_init_buffers"]},{"label":"idx_reset","summary":"## Module: Idx Reset\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `reset_idx`","member_count":1,"key_symbols":["reset_idx"]},{"label":"compute_torques","summary":"## Module: Compute Torques\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `_compute_torques`","member_count":1,"key_symbols":["_compute_torques"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'make_alg_runner' is 51 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_plot' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'play' is 72 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_init_buffers' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_create_envs' is 85 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 59 lines long","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 52 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 22 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

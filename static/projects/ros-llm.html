@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ROS-LLM — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>ROS-LLM</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **46 files** with **75 symbols** across **2321 lines of code**, written in **python**.
+
+The codebase is organized into **11 functional modules** (automatically detected communities) with **30 entry points**.
+
+### Modules at a Glance
+
+- **Misc** — 19 symbols (cohesion: 0%)
+- **Test Copyright** — 16 symbols (cohesion: 13%)
+- **Audio Robot** — 15 symbols (cohesion: 18%)
+- **History Call** — 6 symbols (cohesion: 20%)
+- **Action Listening** — 5 symbols (cohesion: 60%)
+- **Response Information** — 5 symbols (cohesion: 20%)
+- **Publish Feedback** — 3 symbols (cohesion: 100%)
+- **Init Publish** — 2 symbols (cohesion: 100%)
+- **Robot** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `main` — main function
+- `main` — main function
+- `main` — main function
+- `main` — main function
+- `main` — main function</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`publish_cmd_vel`** (Function)</code> — CLI pattern, zero callers *(score: 0.8)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **75 symbols** connected by **77 relationships** across **11 modules**.
+
+### Relationship Types
+
+- **70** function calls
+- **7** import dependencies
+
+### Module Hierarchy
+
+- **Misc** (19 symbols) — includes: `test_flake8`, `test_flake8`, `__init__`
+- **Test Copyright** (16 symbols) — includes: `test_copyright`, `test_pep257`, `test_pep257`
+- **Audio Robot** (15 symbols) — includes: `AudioInput`, `MultiRobot`, `main`
+- **History Call** (6 symbols) — includes: `write_chat_history_to_json`, `function_call_response_callback`, `publish_string`
+- **Action Listening** (5 symbols) — includes: `state_listener_callback`, `__init__`, `publish_string`
+- **Response Information** (5 symbols) — includes: `get_response_information`, `__init__`, `llm_callback`
+- **Publish Feedback** (3 symbols) — includes: `__init__`, `feedback_for_user_callback`, `publish_string`
+- **Init Publish** (2 symbols) — includes: `__init__`, `publish_string`
+- **Robot** (2 symbols) — includes: `__init__`, `RobotBehavior`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `UserConfig` (Class) — used by 14 other symbols
+- `main` (Function) — used by 13 other symbols
+- `publish_string` (Function) — used by 5 other symbols
+- `publish_string` (Function) — used by 4 other symbols
+- `publish_string` (Function) — used by 4 other symbols
+- `add_message_to_history` (Function) — used by 3 other symbols
+- `publish_string` (Function) — used by 3 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 19 symbols, cohesion 0%
+- **Test Copyright** — 16 symbols, cohesion 13%
+- **Audio Robot** — 15 symbols, cohesion 18%
+- **History Call** — 6 symbols, cohesion 20%
+- **Response Information** — 5 symbols, cohesion 20%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 46 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">46</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">2321</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">75</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">1.8</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/user_config.py</code></div>
+                <div class="card-meta">complexity: 9.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/multi_robot.py</code></div>
+                <div class="card-meta">complexity: 7.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/turtle_robot.py</code></div>
+                <div class="card-meta">complexity: 6.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/robot_behavior.py</code></div>
+                <div class="card-meta">complexity: 5.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_model/llm_model/chatgpt.py</code></div>
+                <div class="card-meta">complexity: 4.8 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/arx5_arm_robot.py</code></div>
+                <div class="card-meta">complexity: 4.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input.py</code></div>
+                <div class="card-meta">complexity: 3.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input_local.py</code></div>
+                <div class="card-meta">complexity: 3.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_output/llm_output/llm_audio_output.py</code></div>
+                <div class="card-meta">complexity: 2.8 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/__init__.py</code></div>
+                <div class="card-meta">complexity: 1.0 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (11)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">19 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **19 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Functions
+
+- `test_flake8`
+- `test_flake8`
+- `__init__`
+- `generate_launch_description`
+- `publish_cmd_vel`
+- `publish_cmd_vel`
+- `test_flake8`
+- `generate_launch_description`
+- `test_flake8`
+- `generate_launch_description`
+- ...and 9 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: test_flake8, function_call_callback, publish_cmd_vel, function_call_callback, publish_cmd_vel</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">test_copyright</div>
+                        <div class="card-meta">16 symbols</div>
+                        <p>## Module: Test Copyright
+
+This module contains **16 symbols** with a cohesion score of **13%** and **1 external connections**.
+
+### Functions
+
+- `test_copyright`
+- `test_pep257`
+- `test_pep257`
+- `test_pep257`
+- `__init__`
+- `test_copyright`
+- `action_function_listening`
+- `test_copyright`
+- `test_pep257`
+- `test_pep257`
+- ...and 6 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, action_function_listening, publish_string, main, test_copyright</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">audio_robot</div>
+                        <div class="card-meta">15 symbols</div>
+                        <p>## Module: Audio Robot
+
+This module contains **15 symbols** with a cohesion score of **18%** and **2 external connections**.
+
+### Types
+
+- `AudioInput`
+- `MultiRobot`
+- `TurtleRobot`
+- `AudioInput`
+- `UserConfig`
+- `ArmRobot`
+- `AudioOutput`
+
+### Functions
+
+- `main`
+- `main`
+- `call_service`
+- `publish_target_pose`
+- `main`
+- `reset_turtlesim`
+- `state_listener_callback`
+- `main`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: AudioInput, state_listener_callback, AudioInput, TurtleRobot, reset_turtlesim</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">history_call</div>
+                        <div class="card-meta">6 symbols</div>
+                        <p>## Module: History Call
+
+This module contains **6 symbols** with a cohesion score of **20%** and **4 external connections**.
+
+### Functions
+
+- `write_chat_history_to_json`
+- `function_call_response_callback`
+- `publish_string`
+- `function_call`
+- `main`
+- `add_message_to_history`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: publish_string, add_message_to_history, write_chat_history_to_json, function_call, function_call_response_callback</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">action_listening</div>
+                        <div class="card-meta">5 symbols</div>
+                        <p>## Module: Action Listening
+
+This module contains **5 symbols** with a cohesion score of **60%** and **2 external connections**.
+
+### Functions
+
+- `state_listener_callback`
+- `__init__`
+- `publish_string`
+- `action_function_listening`
+- `main`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, state_listener_callback, action_function_listening, publish_string, main</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">response_information</div>
+                        <div class="card-meta">5 symbols</div>
+                        <p>## Module: Response Information
+
+This module contains **5 symbols** with a cohesion score of **20%** and **10 external connections**.
+
+### Types
+
+- `ChatGPTNode`
+
+### Functions
+
+- `get_response_information`
+- `__init__`
+- `llm_callback`
+- `generate_chatgpt_response`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: ChatGPTNode, __init__, generate_chatgpt_response, get_response_information, llm_callback</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">publish_feedback</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Publish Feedback
+
+This module contains **3 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `feedback_for_user_callback`
+- `publish_string`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, feedback_for_user_callback, publish_string</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_publish</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Init Publish
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `publish_string`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, publish_string</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">robot</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Robot
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `RobotBehavior`
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: RobotBehavior, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_10</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 10
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_11</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 11
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (10)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'action_function_listening' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'publish_cmd_vel' is 59 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: main → AudioOutput → main</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/arx5_with_turtlesim.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/audio_in_text_out_demo.launch.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/chatgpt_with_arm_robot.launch.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/chatgpt_with_multi_robot.launch.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/chatgpt_with_turtle_robot.launch.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/local_chatgpt_with_multi_robot.launch.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/llm_bringup/__init__.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/setup.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/test/test_copyright.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/test/test_flake8.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/test/test_pep257.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/__init__.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/robot_behavior.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/user_config.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/setup.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/test/test_copyright.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/test/test_flake8.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_config/test/test_pep257.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/__init__.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input_local.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/setup.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/test/test_copyright.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/test/test_flake8.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_input/test/test_pep257.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_model/llm_model/__init__.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_model/llm_model/chatgpt.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_model/setup.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_model/test/test_copyright.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_model/test/test_flake8.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_model/test/test_pep257.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_output/llm_output/__init__.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_output/llm_output/llm_audio_output.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_output/setup.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_output/test/test_copyright.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_output/test/test_flake8.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_output/test/test_pep257.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/__init__.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/arx5_arm_robot.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/multi_robot.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/test.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/turtle_robot.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/setup.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/test/test_copyright.py
+├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/test/test_flake8.py
+└── /Users/bm/carokia-repos/ROS-LLM/llm_robot/test/test_pep257.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 09:25 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"ROS-LLM","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **46 files** with **75 symbols** across **2321 lines of code**, written in **python**.\n\nThe codebase is organized into **11 functional modules** (automatically detected communities) with **30 entry points**.\n\n### Modules at a Glance\n\n- **Misc** — 19 symbols (cohesion: 0%)\n- **Test Copyright** — 16 symbols (cohesion: 13%)\n- **Audio Robot** — 15 symbols (cohesion: 18%)\n- **History Call** — 6 symbols (cohesion: 20%)\n- **Action Listening** — 5 symbols (cohesion: 60%)\n- **Response Information** — 5 symbols (cohesion: 20%)\n- **Publish Feedback** — 3 symbols (cohesion: 100%)\n- **Init Publish** — 2 symbols (cohesion: 100%)\n- **Robot** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `main` — main function\n- `main` — main function\n- `main` — main function\n- `main` — main function\n- `main` — main function","architecture_mermaid":"","reading_order":[{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`publish_cmd_vel`** (Function)","reason":"CLI pattern, zero callers *(score: 0.8)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **75 symbols** connected by **77 relationships** across **11 modules**.\n\n### Relationship Types\n\n- **70** function calls\n- **7** import dependencies\n\n### Module Hierarchy\n\n- **Misc** (19 symbols) — includes: `test_flake8`, `test_flake8`, `__init__`\n- **Test Copyright** (16 symbols) — includes: `test_copyright`, `test_pep257`, `test_pep257`\n- **Audio Robot** (15 symbols) — includes: `AudioInput`, `MultiRobot`, `main`\n- **History Call** (6 symbols) — includes: `write_chat_history_to_json`, `function_call_response_callback`, `publish_string`\n- **Action Listening** (5 symbols) — includes: `state_listener_callback`, `__init__`, `publish_string`\n- **Response Information** (5 symbols) — includes: `get_response_information`, `__init__`, `llm_callback`\n- **Publish Feedback** (3 symbols) — includes: `__init__`, `feedback_for_user_callback`, `publish_string`\n- **Init Publish** (2 symbols) — includes: `__init__`, `publish_string`\n- **Robot** (2 symbols) — includes: `__init__`, `RobotBehavior`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `UserConfig` (Class) — used by 14 other symbols\n- `main` (Function) — used by 13 other symbols\n- `publish_string` (Function) — used by 5 other symbols\n- `publish_string` (Function) — used by 4 other symbols\n- `publish_string` (Function) — used by 4 other symbols\n- `add_message_to_history` (Function) — used by 3 other symbols\n- `publish_string` (Function) — used by 3 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 19 symbols, cohesion 0%\n- **Test Copyright** — 16 symbols, cohesion 13%\n- **Audio Robot** — 15 symbols, cohesion 18%\n- **History Call** — 6 symbols, cohesion 20%\n- **Response Information** — 5 symbols, cohesion 20%","why_trending":"## Why This Project\n\nThis project is written in python with 46 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":46,"total_sloc":2321,"total_symbols":75,"avg_complexity":1.8069358178053827,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/user_config.py","heatmap_score":0.0,"complexity":9.0,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/multi_robot.py","heatmap_score":0.0,"complexity":7.285714285714286,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/turtle_robot.py","heatmap_score":0.0,"complexity":6.666666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/robot_behavior.py","heatmap_score":0.0,"complexity":5.0,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_model/llm_model/chatgpt.py","heatmap_score":0.0,"complexity":4.833333333333333,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/arx5_arm_robot.py","heatmap_score":0.0,"complexity":4.2,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input.py","heatmap_score":0.0,"complexity":3.1666666666666665,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input_local.py","heatmap_score":0.0,"complexity":3.1666666666666665,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_output/llm_output/llm_audio_output.py","heatmap_score":0.0,"complexity":2.8,"churn":0},{"path":"/Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/__init__.py","heatmap_score":0.0,"complexity":1.0,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/arx5_with_turtlesim.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/audio_in_text_out_demo.launch.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/chatgpt_with_arm_robot.launch.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/chatgpt_with_multi_robot.launch.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/chatgpt_with_turtle_robot.launch.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/launch/local_chatgpt_with_multi_robot.launch.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/llm_bringup/__init__.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/setup.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/test/test_copyright.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/test/test_flake8.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_bringup/test/test_pep257.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/__init__.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/robot_behavior.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/llm_config/user_config.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/setup.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/test/test_copyright.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/test/test_flake8.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_config/test/test_pep257.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/__init__.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/llm_input/llm_audio_input_local.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/setup.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/test/test_copyright.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/test/test_flake8.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_input/test/test_pep257.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_model/llm_model/__init__.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_model/llm_model/chatgpt.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_model/setup.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_model/test/test_copyright.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_model/test/test_flake8.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_model/test/test_pep257.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_output/llm_output/__init__.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_output/llm_output/llm_audio_output.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_output/setup.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_output/test/test_copyright.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_output/test/test_flake8.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_output/test/test_pep257.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/__init__.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/arx5_arm_robot.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/multi_robot.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/test.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/llm_robot/turtle_robot.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/setup.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/test/test_copyright.py\n├── /Users/bm/carokia-repos/ROS-LLM/llm_robot/test/test_flake8.py\n└── /Users/bm/carokia-repos/ROS-LLM/llm_robot/test/test_pep257.py","communities":[{"label":"misc","summary":"## Module: Misc\n\nThis module contains **19 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Functions\n\n- `test_flake8`\n- `test_flake8`\n- `__init__`\n- `generate_launch_description`\n- `publish_cmd_vel`\n- `publish_cmd_vel`\n- `test_flake8`\n- `generate_launch_description`\n- `test_flake8`\n- `generate_launch_description`\n- ...and 9 more","member_count":19,"key_symbols":["test_flake8","function_call_callback","publish_cmd_vel","function_call_callback","publish_cmd_vel"]},{"label":"test_copyright","summary":"## Module: Test Copyright\n\nThis module contains **16 symbols** with a cohesion score of **13%** and **1 external connections**.\n\n### Functions\n\n- `test_copyright`\n- `test_pep257`\n- `test_pep257`\n- `test_pep257`\n- `__init__`\n- `test_copyright`\n- `action_function_listening`\n- `test_copyright`\n- `test_pep257`\n- `test_pep257`\n- ...and 6 more","member_count":16,"key_symbols":["__init__","action_function_listening","publish_string","main","test_copyright"]},{"label":"audio_robot","summary":"## Module: Audio Robot\n\nThis module contains **15 symbols** with a cohesion score of **18%** and **2 external connections**.\n\n### Types\n\n- `AudioInput`\n- `MultiRobot`\n- `TurtleRobot`\n- `AudioInput`\n- `UserConfig`\n- `ArmRobot`\n- `AudioOutput`\n\n### Functions\n\n- `main`\n- `main`\n- `call_service`\n- `publish_target_pose`\n- `main`\n- `reset_turtlesim`\n- `state_listener_callback`\n- `main`","member_count":15,"key_symbols":["AudioInput","state_listener_callback","AudioInput","TurtleRobot","reset_turtlesim"]},{"label":"history_call","summary":"## Module: History Call\n\nThis module contains **6 symbols** with a cohesion score of **20%** and **4 external connections**.\n\n### Functions\n\n- `write_chat_history_to_json`\n- `function_call_response_callback`\n- `publish_string`\n- `function_call`\n- `main`\n- `add_message_to_history`","member_count":6,"key_symbols":["publish_string","add_message_to_history","write_chat_history_to_json","function_call","function_call_response_callback"]},{"label":"action_listening","summary":"## Module: Action Listening\n\nThis module contains **5 symbols** with a cohesion score of **60%** and **2 external connections**.\n\n### Functions\n\n- `state_listener_callback`\n- `__init__`\n- `publish_string`\n- `action_function_listening`\n- `main`","member_count":5,"key_symbols":["__init__","state_listener_callback","action_function_listening","publish_string","main"]},{"label":"response_information","summary":"## Module: Response Information\n\nThis module contains **5 symbols** with a cohesion score of **20%** and **10 external connections**.\n\n### Types\n\n- `ChatGPTNode`\n\n### Functions\n\n- `get_response_information`\n- `__init__`\n- `llm_callback`\n- `generate_chatgpt_response`","member_count":5,"key_symbols":["ChatGPTNode","__init__","generate_chatgpt_response","get_response_information","llm_callback"]},{"label":"publish_feedback","summary":"## Module: Publish Feedback\n\nThis module contains **3 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `feedback_for_user_callback`\n- `publish_string`","member_count":3,"key_symbols":["__init__","feedback_for_user_callback","publish_string"]},{"label":"init_publish","summary":"## Module: Init Publish\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `publish_string`","member_count":2,"key_symbols":["__init__","publish_string"]},{"label":"robot","summary":"## Module: Robot\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `RobotBehavior`\n\n### Functions\n\n- `__init__`","member_count":2,"key_symbols":["RobotBehavior","__init__"]},{"label":"group_10","summary":"## Module: Group 10\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]},{"label":"group_11","summary":"## Module: Group 11\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'action_function_listening' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'publish_cmd_vel' is 59 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 82 lines long","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: main → AudioOutput → main","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

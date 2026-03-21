@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Arduino-FOC — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>Arduino-FOC</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **103 files** with **448 symbols** across **10350 lines of code**, written in **python**.
+
+The codebase is organized into **27 functional modules** (automatically detected communities) with **30 entry points**.
+
+### Modules at a Glance
+
+- **Misc** — 75 symbols (cohesion: 0%)
+- **Test External** — 50 symbols (cohesion: 3%)
+- **Action Case** — 36 symbols (cohesion: 6%)
+- **Lag Random** — 31 symbols (cohesion: 6%)
+- **Config User** — 31 symbols (cohesion: 4%)
+- **Test Pitch** — 29 symbols (cohesion: 3%)
+- **Wrap Pendulum** — 27 symbols (cohesion: 5%)
+- **Config Yaml** — 27 symbols (cohesion: 5%)
+- **Servos Env** — 26 symbols (cohesion: 6%)
+- **Clamp Update** — 20 symbols (cohesion: 8%)
+- **Height Update** — 18 symbols (cohesion: 3%)
+- **Register Reset** — 18 symbols (cohesion: 38%)
+- **Derivative Bounded** — 16 symbols (cohesion: 12%)
+- **Write Ensure** — 15 symbols (cohesion: 10%)
+- **Configure** — 7 symbols (cohesion: 90%)
+- **Mpc Classes** — 3 symbols (cohesion: 67%)
+- **Set Next** — 3 symbols (cohesion: 67%)
+- **Joint Classes** — 3 symbols (cohesion: 67%)
+- **Del** — 2 symbols (cohesion: 100%)
+- **Add** — 2 symbols (cohesion: 100%)
+- **Init Prox** — 2 symbols (cohesion: 100%)
+- **Close** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `main` — main function
+- `__init__` — module entry, zero callers, calls others</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **448 symbols** connected by **767 relationships** across **27 modules**.
+
+### Relationship Types
+
+- **656** function calls
+- **99** import dependencies
+- **12** inheritance relationships
+
+### Module Hierarchy
+
+- **Misc** (75 symbols) — includes: `mock_get_joint_info`, `log`, `__init__`
+- **Test External** (50 symbols) — includes: `test_external_force_string_representation`, `test_get_contact_points_invalid_link_name`, `test_torque_control_noise`
+- **Action Case** (36 symbols) — includes: `main`, `setUp`, `Model`
+- **Lag Random** (31 symbols) — includes: `SpineBackendTestCase`, `UpkieRuntimeError`, `__init__`
+- **Config User** (31 symbols) — includes: `PointContact`, `test_inertia_randomization_no_variation`, `test_merge_user_robot_config_nested_override`
+- **Test Pitch** (29 symbols) — includes: `test_initial_pitch`, `test_reward`, `__get_servo_observations`
+- **Wrap Pendulum** (27 symbols) — includes: `PyBulletBackendTestCase`, `set_action`, `sample_position`
+- **Config Yaml** (27 symbols) — includes: `UserConfigTestCase`, `test_wait_times_out`, `format`
+- **Servos Env** (26 symbols) — includes: `reset`, `get_spine_action`, `setUp`
+- **Clamp Update** (20 symbols) — includes: `low_pass_filter`, `step`, `__init__`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `step` (Function) — used by 46 other symbols
+- `ExternalForce` (Class) — used by 45 other symbols
+- `close` (Function) — used by 40 other symbols
+- `PyBulletBackend` (Class) — used by 34 other symbols
+- `reset` (Function) — used by 31 other symbols
+- `UpkieException` (Class) — used by 27 other symbols
+- `register` (Function) — used by 26 other symbols
+- `main` (Function) — used by 23 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 75 symbols, cohesion 0%
+- **Test External** — 50 symbols, cohesion 3%
+- **Height Update** — 18 symbols, cohesion 3%
+- **Test Pitch** — 29 symbols, cohesion 3%
+- **Config User** — 31 symbols, cohesion 4%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 103 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">103</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">10350</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">448</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">3.3</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/tools/setup/configure_cpu_isolation.py</code></div>
+                <div class="card-meta">complexity: 14.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/examples/pybullet/apply_external_forces.py</code></div>
+                <div class="card-meta">complexity: 12.5 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/upkie/model/model.py</code></div>
+                <div class="card-meta">complexity: 9.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/upkie/utils/joystick.py</code></div>
+                <div class="card-meta">complexity: 8.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/upkie/utils/nested_update.py</code></div>
+                <div class="card-meta">complexity: 8.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/wait_for_shared_memory.py</code></div>
+                <div class="card-meta">complexity: 8.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/tests/envs/backends/test_pybullet_backend_mock.py</code></div>
+                <div class="card-meta">complexity: 7.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/mpc_balancer/height_controller.py</code></div>
+                <div class="card-meta">complexity: 7.4 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/mpc_balancer.py</code></div>
+                <div class="card-meta">complexity: 7.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/upkie/examples/real_robot/neutral_configuration.py</code></div>
+                <div class="card-meta">complexity: 7.0 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (27)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">75 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **75 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `SpineInterfaceTestCase`
+- `UpkieEnvsTestCase`
+- `ModelTestCase`
+- `Request`
+
+### Functions
+
+- `mock_get_joint_info`
+- `log`
+- `__init__`
+- `set_bullet_action`
+- `__init__`
+- `__repr__`
+- `sample_linear_velocity`
+- `step`
+- `get_spine_observation`
+- `mock_getDynamicsInfo`
+- ...and 61 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: test_spine_config_root_keys, test_default_spine_config_structure, test_default_floor_contact_config, test_default_wheel_contact_config, test_default_wheel_odometry_config</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">test_external</div>
+                        <div class="card-meta">50 symbols</div>
+                        <p>## Module: Test External
+
+This module contains **50 symbols** with a cohesion score of **3%** and **76 external connections**.
+
+### Types
+
+- `PyBulletBackend`
+- `ExternalForceTestCase`
+- `PointContactTestCase`
+
+### Functions
+
+- `test_external_force_string_representation`
+- `test_get_contact_points_invalid_link_name`
+- `test_torque_control_noise`
+- `get_contact_points`
+- `test_external_force_type_hints`
+- `test_randomize_inertias_method`
+- `test_external_force_basic_functionality`
+- `tearDown`
+- `test_external_force_initialization_defaults`
+- `test_registration`
+- ...and 37 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: PointContactTestCase, test_point_contact_creation, ExternalForceTestCase, test_external_force_initialization_with_list, test_external_force_initialization_defaults</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">action_case</div>
+                        <div class="card-meta">36 symbols</div>
+                        <p>## Module: Action Case
+
+This module contains **36 symbols** with a cohesion score of **6%** and **35 external connections**.
+
+### Types
+
+- `Model`
+- `AddActionToObservation`
+- `ActionObserverEnv`
+- `DifferentiateActionTestCase`
+- `RaspiTestCase`
+- `DifferentiateAction`
+- `NoisifyObservationTestCase`
+- `MockBackend`
+- `NoisifyActionTestCase`
+- `AddActionToObservationTestCase`
+
+### Functions
+
+- `main`
+- `setUp`
+- `test_max_ground_velocity`
+- `test_robot_state`
+- `log`
+- `test_get_neutral_action`
+- `sample_orientation`
+- `test_dtype_consistency`
+- `merge_user_spine_config`
+- `test_spine_pendulum`
+- ...and 16 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: main, test_user_config_is_dict, test_robot_state, RaspiTestCase, test_point_contact_repr</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">lag_random</div>
+                        <div class="card-meta">31 symbols</div>
+                        <p>## Module: Lag Random
+
+This module contains **31 symbols** with a cohesion score of **6%** and **25 external connections**.
+
+### Types
+
+- `SpineBackendTestCase`
+- `UpkieRuntimeError`
+- `AddLagToAction`
+- `RandomPush`
+- `PendulumTestCase`
+- `MissingOptionalDependency`
+- `ModelError`
+- `AddLagToActionTestCase`
+- `UpkieException`
+- `FallDetected`
+- `PerformanceIssue`
+- `UpkieServos`
+- `ConstantObservationEnv`
+- `RandomPushTestCase`
+- `NoisifyAction`
+
+### Functions
+
+- `__init__`
+- `__init__`
+- `test_noise`
+- `__init__`
+- `test_check_env`
+- `set_external_forces`
+- `test_wrapper`
+- `test_lpf`
+- `_is_cxx`
+- `__create_servo_spaces`
+- ...and 6 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _is_cxx, test_custom_rotation_base_to_imu, test_noise, test_diff, test_check_env</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">config_user</div>
+                        <div class="card-meta">31 symbols</div>
+                        <p>## Module: Config User
+
+This module contains **31 symbols** with a cohesion score of **4%** and **30 external connections**.
+
+### Types
+
+- `PointContact`
+- `RobotConfigTestCase`
+- `SpineConfigTestCase`
+
+### Functions
+
+- `test_inertia_randomization_no_variation`
+- `test_merge_user_robot_config_nested_override`
+- `test_inertia_randomization_initialization`
+- `test_merge_user_spine_config_with_overrides`
+- `__get_base_orientation_observation`
+- `test_joint_properties_initialization`
+- `reset`
+- `test_merge_user_spine_config_no_spine_section`
+- `test_merge_user_spine_config_no_user_config`
+- `close`
+- ...and 18 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: SpineConfigTestCase, test_merge_user_spine_config_no_user_config, test_merge_user_spine_config_with_overrides, test_merge_user_spine_config_nested_override, test_merge_user_spine_config_no_spine_section</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">test_pitch</div>
+                        <div class="card-meta">29 symbols</div>
+                        <p>## Module: Test Pitch
+
+This module contains **29 symbols** with a cohesion score of **3%** and **57 external connections**.
+
+### Types
+
+- `ExternalForce`
+
+### Functions
+
+- `test_initial_pitch`
+- `test_reward`
+- `__get_servo_observations`
+- `__get_wheel_odometry_observation`
+- `test_dtype_consistency`
+- `test_action_clamping`
+- `test_maximum_torques`
+- `_reset_robot_state`
+- `test_reward`
+- `test_torque_measurement_noise`
+- ...and 18 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: test_clamp_abs, test_clamp_inf, test_noise, test_check_env, test_reward</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">wrap_pendulum</div>
+                        <div class="card-meta">27 symbols</div>
+                        <p>## Module: Wrap Pendulum
+
+This module contains **27 symbols** with a cohesion score of **5%** and **15 external connections**.
+
+### Types
+
+- `PyBulletBackendTestCase`
+- `RobotStateTestCase`
+- `UpkieTimeoutError`
+- `Joystick`
+- `RobotStateRandomization`
+- `MockBackend`
+- `Backend`
+
+### Functions
+
+- `set_action`
+- `sample_position`
+- `wrap_pendulum`
+- `wrap_spine_pendulum`
+- `wrap_genesis_pendulum`
+- `sample_linear_velocity`
+- `__init__`
+- `test_reset`
+- `wrap_pybullet_pendulum`
+- `_read_request`
+- ...and 10 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: RobotStateTestCase, MockBackend, PyBulletBackendTestCase, __read_request, test_reset</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">config_yaml</div>
+                        <div class="card-meta">27 symbols</div>
+                        <p>## Module: Config Yaml
+
+This module contains **27 symbols** with a cohesion score of **5%** and **50 external connections**.
+
+### Types
+
+- `UserConfigTestCase`
+- `SpineInterface`
+
+### Functions
+
+- `test_wait_times_out`
+- `format`
+- `configure_hostapd`
+- `wait_monkeypatch`
+- `start`
+- `wrapped_function`
+- `set_config_var`
+- `__del__`
+- `configure_interfaces`
+- `get_clang_format_path`
+- ...and 15 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_clang_format_path, log_message, wrapped_function, parse_command_line_arguments, set_config_var</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">servos_env</div>
+                        <div class="card-meta">26 symbols</div>
+                        <p>## Module: Servos Env
+
+This module contains **26 symbols** with a cohesion score of **6%** and **47 external connections**.
+
+### Types
+
+- `MockBackend`
+- `UpkiePendulum`
+- `UpkieEnv`
+- `GenesisBackend`
+- `PyBulletBackendMockTestCase`
+- `UpkieServosTestCase`
+- `EntryPointsTestCase`
+- `MockSpine`
+- `RobotState`
+- `SpineBackend`
+
+### Functions
+
+- `reset`
+- `get_spine_action`
+- `setUp`
+- `setUp`
+- `make_mock_servos_env`
+- `make_spine_servos_env`
+- `setUp`
+- `__init__`
+- `make_pybullet_servos_env`
+- `sample_state`
+- ...and 6 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: test_check_env, setUp, setUp, UpkieServosTestCase, setUp</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">clamp_update</div>
+                        <div class="card-meta">20 symbols</div>
+                        <p>## Module: Clamp Update
+
+This module contains **20 symbols** with a cohesion score of **8%** and **30 external connections**.
+
+### Types
+
+- `WheelController`
+- `ClampTestCase`
+
+### Functions
+
+- `low_pass_filter`
+- `step`
+- `__init__`
+- `read_gin_configuration`
+- `test_on_raspi`
+- `get_ik_servo_action`
+- `update`
+- `clamp_and_warn`
+- `__get_leg_servo_action`
+- `step`
+- ...and 8 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: ClampTestCase, test_clamp, test_on_raspi, update_target_height, get_ik_servo_action</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">height_update</div>
+                        <div class="card-meta">18 symbols</div>
+                        <p>## Module: Height Update
+
+This module contains **18 symbols** with a cohesion score of **3%** and **12 external connections**.
+
+### Types
+
+- `SpdlogFormatter`
+- `HeightController`
+
+### Functions
+
+- `test_clamp_and_warn`
+- `__get_env_observation`
+- `cycle`
+- `reset`
+- `serialize_to_servo_action`
+- `update_target_yaw_velocity`
+- `clamp_abs`
+- `update_ik_targets`
+- `_observe_ground_positions`
+- `test_check_env`
+- ...and 6 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: test_clamp_and_warn, test_check_env, serialize_to_servo_action, HeightController, get_next_height_from_joystick</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">register_reset</div>
+                        <div class="card-meta">18 symbols</div>
+                        <p>## Module: Register Reset
+
+This module contains **18 symbols** with a cohesion score of **38%** and **20 external connections**.
+
+### Types
+
+- `NoisifyObservation`
+
+### Functions
+
+- `register_upkie_envs`
+- `wrap_environment`
+- `main`
+- `reset`
+- `run`
+- `get_lifting_force`
+- `reset_to_neutral`
+- `run_episode`
+- `print_contact_details`
+- `step`
+- ...and 7 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: register_upkie_envs, test_check_env, test_reset, setUp, test_reset</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">derivative_bounded</div>
+                        <div class="card-meta">16 symbols</div>
+                        <p>## Module: Derivative Bounded
+
+This module contains **16 symbols** with a cohesion score of **12%** and **13 external connections**.
+
+### Types
+
+- `SpineError`
+
+### Functions
+
+- `compute_ground_velocity`
+- `_detect_raspi`
+- `get_init_servo_action`
+- `reset`
+- `__perf_checks`
+- `on_raspi`
+- `_reset_robot_state`
+- `abs_bounded_derivative_filter`
+- `clamp`
+- `solve`
+- ...and 5 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: observe_configuration, get_init_servo_action, parse_command_line_arguments, _detect_raspi, on_raspi</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">write_ensure</div>
+                        <div class="card-meta">15 symbols</div>
+                        <p>## Module: Write Ensure
+
+This module contains **15 symbols** with a cohesion score of **10%** and **13 external connections**.
+
+### Functions
+
+- `step`
+- `_write_dict`
+- `_get_user_config_path`
+- `get_spine_observation`
+- `configure_cpu_isolation`
+- `ensure_contents`
+- `run`
+- `_check_clang_format_idempotence`
+- `__write_request`
+- `write`
+- ...and 5 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _check_clang_format_idempotence, log_method, run, ensure_present, ensure_contents</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">configure</div>
+                        <div class="card-meta">7 symbols</div>
+                        <p>## Module: Configure
+
+This module contains **7 symbols** with a cohesion score of **90%** and **0 external connections**.
+
+### Functions
+
+- `configure_default_limits`
+- `configure_gains`
+- `configure_servo`
+- `run_shell_command`
+- `configure_velocity_limits`
+- `configure_position_limits`
+- `write_servo_configuration`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: run_shell_command, configure_servo, write_servo_configuration, configure_position_limits, configure_velocity_limits</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">mpc_classes</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Mpc Classes
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Types
+
+- `MPCBalancer`
+- `RemoteControl`
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: RemoteControl, __init__, MPCBalancer</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">set_next</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Set Next
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `start`
+- `set_action`
+- `_next_observation`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _next_observation, start, set_action</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">joint_classes</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Joint Classes
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Types
+
+- `JointLimit`
+- `Joint`
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, JointLimit, Joint</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">del</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Del
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `close`
+- `__del__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __del__, close</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">add</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Add
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `add_target_frames`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: add_target_frames, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_prox</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Init Prox
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `ProxQPWorkspace`
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, ProxQPWorkspace</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">close</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Close
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__del__`
+- `close`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __del__, close</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_23</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 23
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">serialize</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Serialize
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `serialize`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: serialize</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_25</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 25
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">reset</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Reset
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `reset`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">step</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Step
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `step`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: step</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (60)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'configure_interfaces' is 73 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_dtype_consistency' is 52 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'setUp' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_joint_properties_initialization' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_friction_computation_with_friction' is 70 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_friction_stiction_threshold' is 62 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'test_torque_measurement_noise' is 112 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_torque_measurement_noise_threshold' is 76 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'test_torques_are_nonzero_with_actions' is 114 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'test_torque_control_noise' is 101 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_torque_control_noise_threshold' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_control_vs_measurement_noise_independence' is 87 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_inertia_randomization_initialization' is 71 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_randomize_inertias_method' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_randomize_inertias_repeatability' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_apply_external_forces_world_frame' is 71 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_apply_external_forces_local_frame' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_apply_external_forces_multiple_steps' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_apply_external_forces_update_forces' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_get_contact_points_basic' is 79 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'test_get_contact_points_with_link_name' is 192 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'test_get_contact_points_base_link' is 112 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'mock_get_contact_points_side_effect' is 56 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_apply_external_forces_with_external_force_class' is 84 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_apply_external_forces_mixed_formats' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'__init__' is 129 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'run' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 59 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 52 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'compute_ground_velocity' is 72 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'__init__' is 130 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__get_imu_observation' is 60 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'compute_joint_torque' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_contact_points' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 52 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'__create_servo_spaces' is 113 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: main → _is_cxx → main</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: run → get_lifting_force → run</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: run → print_contact_details → run</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 20 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/upkie/examples/balancing.py
+├── /Users/bm/carokia-repos/upkie/examples/genesis/lying_genuflection.py
+├── /Users/bm/carokia-repos/upkie/examples/genesis/mpc_balancing.py
+├── /Users/bm/carokia-repos/upkie/examples/genesis/pd_balancing.py
+├── /Users/bm/carokia-repos/upkie/examples/pd_control.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/apply_external_forces.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/count_wheel_contacts.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/joint_friction.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/lying_genuflection.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/randomize_inertias.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/sensor_noise.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/set_initial_state.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/torque_balancing.py
+├── /Users/bm/carokia-repos/upkie/examples/pybullet/wrap_environment.py
+├── /Users/bm/carokia-repos/upkie/examples/real_robot.py
+├── /Users/bm/carokia-repos/upkie/examples/real_robot/lying_genuflection.py
+├── /Users/bm/carokia-repos/upkie/examples/real_robot/neutral_configuration.py
+├── /Users/bm/carokia-repos/upkie/examples/real_robot/pd_balancing.py
+├── /Users/bm/carokia-repos/upkie/examples/real_robot/pi_balancing.py
+├── /Users/bm/carokia-repos/upkie/mpc_balancer/__init__.py
+├── /Users/bm/carokia-repos/upkie/mpc_balancer/__main__.py
+├── /Users/bm/carokia-repos/upkie/mpc_balancer/height_controller.py
+├── /Users/bm/carokia-repos/upkie/mpc_balancer/remote_control.py
+├── /Users/bm/carokia-repos/upkie/mpc_balancer/wheel_controller.py
+├── /Users/bm/carokia-repos/upkie/tests/config/test_robot_config.py
+├── /Users/bm/carokia-repos/upkie/tests/config/test_spine_config.py
+├── /Users/bm/carokia-repos/upkie/tests/config/test_user_config.py
+├── /Users/bm/carokia-repos/upkie/tests/conftest.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/backends/spine/test_spine_interface.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/backends/test_pybullet_backend.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/backends/test_pybullet_backend_mock.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/backends/test_spine_backend.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/test_entry_points.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/test_upkie_envs.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/test_upkie_pendulum.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/test_upkie_servos.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_add_action_to_observation.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_add_lag_to_action.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_differentiate_action.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_noisify_action.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_noisify_observation.py
+├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_random_push.py
+├── /Users/bm/carokia-repos/upkie/tests/model/test_model.py
+├── /Users/bm/carokia-repos/upkie/tests/utils/test_clamp.py
+├── /Users/bm/carokia-repos/upkie/tests/utils/test_external_force.py
+├── /Users/bm/carokia-repos/upkie/tests/utils/test_point_contact.py
+├── /Users/bm/carokia-repos/upkie/tests/utils/test_raspi.py
+├── /Users/bm/carokia-repos/upkie/tests/utils/test_robot_state.py
+├── /Users/bm/carokia-repos/upkie/tools/lint/clang_format_lint.py
+├── /Users/bm/carokia-repos/upkie/tools/setup/configure_cpu_isolation.py
+├── /Users/bm/carokia-repos/upkie/tools/setup/configure_servos.py
+├── /Users/bm/carokia-repos/upkie/tools/setup/setup_wifi_ap.py
+├── /Users/bm/carokia-repos/upkie/upkie/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/config/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/config/bullet_config.py
+├── /Users/bm/carokia-repos/upkie/upkie/config/robot_config.py
+├── /Users/bm/carokia-repos/upkie/upkie/config/spine_config.py
+├── /Users/bm/carokia-repos/upkie/upkie/config/user_config.py
+├── /Users/bm/carokia-repos/upkie/upkie/controllers/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/mpc_balancer.py
+├── /Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/proxqp_workspace.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/backend.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/genesis_backend.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/mock_backend.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/pybullet_backend.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/request.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/serialize.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/spine_interface.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/wait_for_shared_memory.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine_backend.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/entry_points.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/testing.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/upkie_env.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/upkie_pendulum.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/upkie_servos.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/add_action_to_observation.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/add_lag_to_action.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/differentiate_action.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/noisify_action.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/noisify_observation.py
+├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/random_push.py
+├── /Users/bm/carokia-repos/upkie/upkie/exceptions.py
+├── /Users/bm/carokia-repos/upkie/upkie/logging.py
+├── /Users/bm/carokia-repos/upkie/upkie/model/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/model/joint.py
+├── /Users/bm/carokia-repos/upkie/upkie/model/joint_limit.py
+├── /Users/bm/carokia-repos/upkie/upkie/model/model.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/__init__.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/clamp.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/external_force.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/filters.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/joystick.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/nested_update.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/point_contact.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/raspi.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/robot_state.py
+├── /Users/bm/carokia-repos/upkie/upkie/utils/robot_state_randomization.py
+└── /Users/bm/carokia-repos/upkie/upkie/utils/rotations.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 09:24 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"Arduino-FOC","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **103 files** with **448 symbols** across **10350 lines of code**, written in **python**.\n\nThe codebase is organized into **27 functional modules** (automatically detected communities) with **30 entry points**.\n\n### Modules at a Glance\n\n- **Misc** — 75 symbols (cohesion: 0%)\n- **Test External** — 50 symbols (cohesion: 3%)\n- **Action Case** — 36 symbols (cohesion: 6%)\n- **Lag Random** — 31 symbols (cohesion: 6%)\n- **Config User** — 31 symbols (cohesion: 4%)\n- **Test Pitch** — 29 symbols (cohesion: 3%)\n- **Wrap Pendulum** — 27 symbols (cohesion: 5%)\n- **Config Yaml** — 27 symbols (cohesion: 5%)\n- **Servos Env** — 26 symbols (cohesion: 6%)\n- **Clamp Update** — 20 symbols (cohesion: 8%)\n- **Height Update** — 18 symbols (cohesion: 3%)\n- **Register Reset** — 18 symbols (cohesion: 38%)\n- **Derivative Bounded** — 16 symbols (cohesion: 12%)\n- **Write Ensure** — 15 symbols (cohesion: 10%)\n- **Configure** — 7 symbols (cohesion: 90%)\n- **Mpc Classes** — 3 symbols (cohesion: 67%)\n- **Set Next** — 3 symbols (cohesion: 67%)\n- **Joint Classes** — 3 symbols (cohesion: 67%)\n- **Del** — 2 symbols (cohesion: 100%)\n- **Add** — 2 symbols (cohesion: 100%)\n- **Init Prox** — 2 symbols (cohesion: 100%)\n- **Close** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `main` — main function\n- `__init__` — module entry, zero callers, calls others","architecture_mermaid":"","reading_order":[{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **448 symbols** connected by **767 relationships** across **27 modules**.\n\n### Relationship Types\n\n- **656** function calls\n- **99** import dependencies\n- **12** inheritance relationships\n\n### Module Hierarchy\n\n- **Misc** (75 symbols) — includes: `mock_get_joint_info`, `log`, `__init__`\n- **Test External** (50 symbols) — includes: `test_external_force_string_representation`, `test_get_contact_points_invalid_link_name`, `test_torque_control_noise`\n- **Action Case** (36 symbols) — includes: `main`, `setUp`, `Model`\n- **Lag Random** (31 symbols) — includes: `SpineBackendTestCase`, `UpkieRuntimeError`, `__init__`\n- **Config User** (31 symbols) — includes: `PointContact`, `test_inertia_randomization_no_variation`, `test_merge_user_robot_config_nested_override`\n- **Test Pitch** (29 symbols) — includes: `test_initial_pitch`, `test_reward`, `__get_servo_observations`\n- **Wrap Pendulum** (27 symbols) — includes: `PyBulletBackendTestCase`, `set_action`, `sample_position`\n- **Config Yaml** (27 symbols) — includes: `UserConfigTestCase`, `test_wait_times_out`, `format`\n- **Servos Env** (26 symbols) — includes: `reset`, `get_spine_action`, `setUp`\n- **Clamp Update** (20 symbols) — includes: `low_pass_filter`, `step`, `__init__`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `step` (Function) — used by 46 other symbols\n- `ExternalForce` (Class) — used by 45 other symbols\n- `close` (Function) — used by 40 other symbols\n- `PyBulletBackend` (Class) — used by 34 other symbols\n- `reset` (Function) — used by 31 other symbols\n- `UpkieException` (Class) — used by 27 other symbols\n- `register` (Function) — used by 26 other symbols\n- `main` (Function) — used by 23 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 75 symbols, cohesion 0%\n- **Test External** — 50 symbols, cohesion 3%\n- **Height Update** — 18 symbols, cohesion 3%\n- **Test Pitch** — 29 symbols, cohesion 3%\n- **Config User** — 31 symbols, cohesion 4%","why_trending":"## Why This Project\n\nThis project is written in python with 103 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":103,"total_sloc":10350,"total_symbols":448,"avg_complexity":3.2863714764200207,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/upkie/tools/setup/configure_cpu_isolation.py","heatmap_score":0.0,"complexity":14.0,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/examples/pybullet/apply_external_forces.py","heatmap_score":0.0,"complexity":12.5,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/upkie/model/model.py","heatmap_score":0.0,"complexity":9.0,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/upkie/utils/joystick.py","heatmap_score":0.0,"complexity":8.0,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/upkie/utils/nested_update.py","heatmap_score":0.0,"complexity":8.0,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/wait_for_shared_memory.py","heatmap_score":0.0,"complexity":8.0,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/tests/envs/backends/test_pybullet_backend_mock.py","heatmap_score":0.0,"complexity":7.666666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/mpc_balancer/height_controller.py","heatmap_score":0.0,"complexity":7.384615384615385,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/mpc_balancer.py","heatmap_score":0.0,"complexity":7.25,"churn":0},{"path":"/Users/bm/carokia-repos/upkie/examples/real_robot/neutral_configuration.py","heatmap_score":0.0,"complexity":7.0,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/upkie/examples/balancing.py\n├── /Users/bm/carokia-repos/upkie/examples/genesis/lying_genuflection.py\n├── /Users/bm/carokia-repos/upkie/examples/genesis/mpc_balancing.py\n├── /Users/bm/carokia-repos/upkie/examples/genesis/pd_balancing.py\n├── /Users/bm/carokia-repos/upkie/examples/pd_control.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/apply_external_forces.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/count_wheel_contacts.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/joint_friction.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/lying_genuflection.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/randomize_inertias.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/sensor_noise.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/set_initial_state.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/torque_balancing.py\n├── /Users/bm/carokia-repos/upkie/examples/pybullet/wrap_environment.py\n├── /Users/bm/carokia-repos/upkie/examples/real_robot.py\n├── /Users/bm/carokia-repos/upkie/examples/real_robot/lying_genuflection.py\n├── /Users/bm/carokia-repos/upkie/examples/real_robot/neutral_configuration.py\n├── /Users/bm/carokia-repos/upkie/examples/real_robot/pd_balancing.py\n├── /Users/bm/carokia-repos/upkie/examples/real_robot/pi_balancing.py\n├── /Users/bm/carokia-repos/upkie/mpc_balancer/__init__.py\n├── /Users/bm/carokia-repos/upkie/mpc_balancer/__main__.py\n├── /Users/bm/carokia-repos/upkie/mpc_balancer/height_controller.py\n├── /Users/bm/carokia-repos/upkie/mpc_balancer/remote_control.py\n├── /Users/bm/carokia-repos/upkie/mpc_balancer/wheel_controller.py\n├── /Users/bm/carokia-repos/upkie/tests/config/test_robot_config.py\n├── /Users/bm/carokia-repos/upkie/tests/config/test_spine_config.py\n├── /Users/bm/carokia-repos/upkie/tests/config/test_user_config.py\n├── /Users/bm/carokia-repos/upkie/tests/conftest.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/backends/spine/test_spine_interface.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/backends/test_pybullet_backend.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/backends/test_pybullet_backend_mock.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/backends/test_spine_backend.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/test_entry_points.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/test_upkie_envs.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/test_upkie_pendulum.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/test_upkie_servos.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_add_action_to_observation.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_add_lag_to_action.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_differentiate_action.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_noisify_action.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_noisify_observation.py\n├── /Users/bm/carokia-repos/upkie/tests/envs/wrappers/test_random_push.py\n├── /Users/bm/carokia-repos/upkie/tests/model/test_model.py\n├── /Users/bm/carokia-repos/upkie/tests/utils/test_clamp.py\n├── /Users/bm/carokia-repos/upkie/tests/utils/test_external_force.py\n├── /Users/bm/carokia-repos/upkie/tests/utils/test_point_contact.py\n├── /Users/bm/carokia-repos/upkie/tests/utils/test_raspi.py\n├── /Users/bm/carokia-repos/upkie/tests/utils/test_robot_state.py\n├── /Users/bm/carokia-repos/upkie/tools/lint/clang_format_lint.py\n├── /Users/bm/carokia-repos/upkie/tools/setup/configure_cpu_isolation.py\n├── /Users/bm/carokia-repos/upkie/tools/setup/configure_servos.py\n├── /Users/bm/carokia-repos/upkie/tools/setup/setup_wifi_ap.py\n├── /Users/bm/carokia-repos/upkie/upkie/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/config/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/config/bullet_config.py\n├── /Users/bm/carokia-repos/upkie/upkie/config/robot_config.py\n├── /Users/bm/carokia-repos/upkie/upkie/config/spine_config.py\n├── /Users/bm/carokia-repos/upkie/upkie/config/user_config.py\n├── /Users/bm/carokia-repos/upkie/upkie/controllers/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/mpc_balancer.py\n├── /Users/bm/carokia-repos/upkie/upkie/controllers/mpc_balancer/proxqp_workspace.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/backend.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/genesis_backend.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/mock_backend.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/pybullet_backend.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/request.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/serialize.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/spine_interface.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine/wait_for_shared_memory.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/backends/spine_backend.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/entry_points.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/testing.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/upkie_env.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/upkie_pendulum.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/upkie_servos.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/add_action_to_observation.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/add_lag_to_action.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/differentiate_action.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/noisify_action.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/noisify_observation.py\n├── /Users/bm/carokia-repos/upkie/upkie/envs/wrappers/random_push.py\n├── /Users/bm/carokia-repos/upkie/upkie/exceptions.py\n├── /Users/bm/carokia-repos/upkie/upkie/logging.py\n├── /Users/bm/carokia-repos/upkie/upkie/model/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/model/joint.py\n├── /Users/bm/carokia-repos/upkie/upkie/model/joint_limit.py\n├── /Users/bm/carokia-repos/upkie/upkie/model/model.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/__init__.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/clamp.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/external_force.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/filters.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/joystick.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/nested_update.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/point_contact.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/raspi.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/robot_state.py\n├── /Users/bm/carokia-repos/upkie/upkie/utils/robot_state_randomization.py\n└── /Users/bm/carokia-repos/upkie/upkie/utils/rotations.py","communities":[{"label":"misc","summary":"## Module: Misc\n\nThis module contains **75 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `SpineInterfaceTestCase`\n- `UpkieEnvsTestCase`\n- `ModelTestCase`\n- `Request`\n\n### Functions\n\n- `mock_get_joint_info`\n- `log`\n- `__init__`\n- `set_bullet_action`\n- `__init__`\n- `__repr__`\n- `sample_linear_velocity`\n- `step`\n- `get_spine_observation`\n- `mock_getDynamicsInfo`\n- ...and 61 more","member_count":75,"key_symbols":["test_spine_config_root_keys","test_default_spine_config_structure","test_default_floor_contact_config","test_default_wheel_contact_config","test_default_wheel_odometry_config"]},{"label":"test_external","summary":"## Module: Test External\n\nThis module contains **50 symbols** with a cohesion score of **3%** and **76 external connections**.\n\n### Types\n\n- `PyBulletBackend`\n- `ExternalForceTestCase`\n- `PointContactTestCase`\n\n### Functions\n\n- `test_external_force_string_representation`\n- `test_get_contact_points_invalid_link_name`\n- `test_torque_control_noise`\n- `get_contact_points`\n- `test_external_force_type_hints`\n- `test_randomize_inertias_method`\n- `test_external_force_basic_functionality`\n- `tearDown`\n- `test_external_force_initialization_defaults`\n- `test_registration`\n- ...and 37 more","member_count":50,"key_symbols":["PointContactTestCase","test_point_contact_creation","ExternalForceTestCase","test_external_force_initialization_with_list","test_external_force_initialization_defaults"]},{"label":"action_case","summary":"## Module: Action Case\n\nThis module contains **36 symbols** with a cohesion score of **6%** and **35 external connections**.\n\n### Types\n\n- `Model`\n- `AddActionToObservation`\n- `ActionObserverEnv`\n- `DifferentiateActionTestCase`\n- `RaspiTestCase`\n- `DifferentiateAction`\n- `NoisifyObservationTestCase`\n- `MockBackend`\n- `NoisifyActionTestCase`\n- `AddActionToObservationTestCase`\n\n### Functions\n\n- `main`\n- `setUp`\n- `test_max_ground_velocity`\n- `test_robot_state`\n- `log`\n- `test_get_neutral_action`\n- `sample_orientation`\n- `test_dtype_consistency`\n- `merge_user_spine_config`\n- `test_spine_pendulum`\n- ...and 16 more","member_count":36,"key_symbols":["main","test_user_config_is_dict","test_robot_state","RaspiTestCase","test_point_contact_repr"]},{"label":"lag_random","summary":"## Module: Lag Random\n\nThis module contains **31 symbols** with a cohesion score of **6%** and **25 external connections**.\n\n### Types\n\n- `SpineBackendTestCase`\n- `UpkieRuntimeError`\n- `AddLagToAction`\n- `RandomPush`\n- `PendulumTestCase`\n- `MissingOptionalDependency`\n- `ModelError`\n- `AddLagToActionTestCase`\n- `UpkieException`\n- `FallDetected`\n- `PerformanceIssue`\n- `UpkieServos`\n- `ConstantObservationEnv`\n- `RandomPushTestCase`\n- `NoisifyAction`\n\n### Functions\n\n- `__init__`\n- `__init__`\n- `test_noise`\n- `__init__`\n- `test_check_env`\n- `set_external_forces`\n- `test_wrapper`\n- `test_lpf`\n- `_is_cxx`\n- `__create_servo_spaces`\n- ...and 6 more","member_count":31,"key_symbols":["_is_cxx","test_custom_rotation_base_to_imu","test_noise","test_diff","test_check_env"]},{"label":"config_user","summary":"## Module: Config User\n\nThis module contains **31 symbols** with a cohesion score of **4%** and **30 external connections**.\n\n### Types\n\n- `PointContact`\n- `RobotConfigTestCase`\n- `SpineConfigTestCase`\n\n### Functions\n\n- `test_inertia_randomization_no_variation`\n- `test_merge_user_robot_config_nested_override`\n- `test_inertia_randomization_initialization`\n- `test_merge_user_spine_config_with_overrides`\n- `__get_base_orientation_observation`\n- `test_joint_properties_initialization`\n- `reset`\n- `test_merge_user_spine_config_no_spine_section`\n- `test_merge_user_spine_config_no_user_config`\n- `close`\n- ...and 18 more","member_count":31,"key_symbols":["SpineConfigTestCase","test_merge_user_spine_config_no_user_config","test_merge_user_spine_config_with_overrides","test_merge_user_spine_config_nested_override","test_merge_user_spine_config_no_spine_section"]},{"label":"test_pitch","summary":"## Module: Test Pitch\n\nThis module contains **29 symbols** with a cohesion score of **3%** and **57 external connections**.\n\n### Types\n\n- `ExternalForce`\n\n### Functions\n\n- `test_initial_pitch`\n- `test_reward`\n- `__get_servo_observations`\n- `__get_wheel_odometry_observation`\n- `test_dtype_consistency`\n- `test_action_clamping`\n- `test_maximum_torques`\n- `_reset_robot_state`\n- `test_reward`\n- `test_torque_measurement_noise`\n- ...and 18 more","member_count":29,"key_symbols":["test_clamp_abs","test_clamp_inf","test_noise","test_check_env","test_reward"]},{"label":"wrap_pendulum","summary":"## Module: Wrap Pendulum\n\nThis module contains **27 symbols** with a cohesion score of **5%** and **15 external connections**.\n\n### Types\n\n- `PyBulletBackendTestCase`\n- `RobotStateTestCase`\n- `UpkieTimeoutError`\n- `Joystick`\n- `RobotStateRandomization`\n- `MockBackend`\n- `Backend`\n\n### Functions\n\n- `set_action`\n- `sample_position`\n- `wrap_pendulum`\n- `wrap_spine_pendulum`\n- `wrap_genesis_pendulum`\n- `sample_linear_velocity`\n- `__init__`\n- `test_reset`\n- `wrap_pybullet_pendulum`\n- `_read_request`\n- ...and 10 more","member_count":27,"key_symbols":["RobotStateTestCase","MockBackend","PyBulletBackendTestCase","__read_request","test_reset"]},{"label":"config_yaml","summary":"## Module: Config Yaml\n\nThis module contains **27 symbols** with a cohesion score of **5%** and **50 external connections**.\n\n### Types\n\n- `UserConfigTestCase`\n- `SpineInterface`\n\n### Functions\n\n- `test_wait_times_out`\n- `format`\n- `configure_hostapd`\n- `wait_monkeypatch`\n- `start`\n- `wrapped_function`\n- `set_config_var`\n- `__del__`\n- `configure_interfaces`\n- `get_clang_format_path`\n- ...and 15 more","member_count":27,"key_symbols":["get_clang_format_path","log_message","wrapped_function","parse_command_line_arguments","set_config_var"]},{"label":"servos_env","summary":"## Module: Servos Env\n\nThis module contains **26 symbols** with a cohesion score of **6%** and **47 external connections**.\n\n### Types\n\n- `MockBackend`\n- `UpkiePendulum`\n- `UpkieEnv`\n- `GenesisBackend`\n- `PyBulletBackendMockTestCase`\n- `UpkieServosTestCase`\n- `EntryPointsTestCase`\n- `MockSpine`\n- `RobotState`\n- `SpineBackend`\n\n### Functions\n\n- `reset`\n- `get_spine_action`\n- `setUp`\n- `setUp`\n- `make_mock_servos_env`\n- `make_spine_servos_env`\n- `setUp`\n- `__init__`\n- `make_pybullet_servos_env`\n- `sample_state`\n- ...and 6 more","member_count":26,"key_symbols":["test_check_env","setUp","setUp","UpkieServosTestCase","setUp"]},{"label":"clamp_update","summary":"## Module: Clamp Update\n\nThis module contains **20 symbols** with a cohesion score of **8%** and **30 external connections**.\n\n### Types\n\n- `WheelController`\n- `ClampTestCase`\n\n### Functions\n\n- `low_pass_filter`\n- `step`\n- `__init__`\n- `read_gin_configuration`\n- `test_on_raspi`\n- `get_ik_servo_action`\n- `update`\n- `clamp_and_warn`\n- `__get_leg_servo_action`\n- `step`\n- ...and 8 more","member_count":20,"key_symbols":["ClampTestCase","test_clamp","test_on_raspi","update_target_height","get_ik_servo_action"]},{"label":"height_update","summary":"## Module: Height Update\n\nThis module contains **18 symbols** with a cohesion score of **3%** and **12 external connections**.\n\n### Types\n\n- `SpdlogFormatter`\n- `HeightController`\n\n### Functions\n\n- `test_clamp_and_warn`\n- `__get_env_observation`\n- `cycle`\n- `reset`\n- `serialize_to_servo_action`\n- `update_target_yaw_velocity`\n- `clamp_abs`\n- `update_ik_targets`\n- `_observe_ground_positions`\n- `test_check_env`\n- ...and 6 more","member_count":18,"key_symbols":["test_clamp_and_warn","test_check_env","serialize_to_servo_action","HeightController","get_next_height_from_joystick"]},{"label":"register_reset","summary":"## Module: Register Reset\n\nThis module contains **18 symbols** with a cohesion score of **38%** and **20 external connections**.\n\n### Types\n\n- `NoisifyObservation`\n\n### Functions\n\n- `register_upkie_envs`\n- `wrap_environment`\n- `main`\n- `reset`\n- `run`\n- `get_lifting_force`\n- `reset_to_neutral`\n- `run_episode`\n- `print_contact_details`\n- `step`\n- ...and 7 more","member_count":18,"key_symbols":["register_upkie_envs","test_check_env","test_reset","setUp","test_reset"]},{"label":"derivative_bounded","summary":"## Module: Derivative Bounded\n\nThis module contains **16 symbols** with a cohesion score of **12%** and **13 external connections**.\n\n### Types\n\n- `SpineError`\n\n### Functions\n\n- `compute_ground_velocity`\n- `_detect_raspi`\n- `get_init_servo_action`\n- `reset`\n- `__perf_checks`\n- `on_raspi`\n- `_reset_robot_state`\n- `abs_bounded_derivative_filter`\n- `clamp`\n- `solve`\n- ...and 5 more","member_count":16,"key_symbols":["observe_configuration","get_init_servo_action","parse_command_line_arguments","_detect_raspi","on_raspi"]},{"label":"write_ensure","summary":"## Module: Write Ensure\n\nThis module contains **15 symbols** with a cohesion score of **10%** and **13 external connections**.\n\n### Functions\n\n- `step`\n- `_write_dict`\n- `_get_user_config_path`\n- `get_spine_observation`\n- `configure_cpu_isolation`\n- `ensure_contents`\n- `run`\n- `_check_clang_format_idempotence`\n- `__write_request`\n- `write`\n- ...and 5 more","member_count":15,"key_symbols":["_check_clang_format_idempotence","log_method","run","ensure_present","ensure_contents"]},{"label":"configure","summary":"## Module: Configure\n\nThis module contains **7 symbols** with a cohesion score of **90%** and **0 external connections**.\n\n### Functions\n\n- `configure_default_limits`\n- `configure_gains`\n- `configure_servo`\n- `run_shell_command`\n- `configure_velocity_limits`\n- `configure_position_limits`\n- `write_servo_configuration`","member_count":7,"key_symbols":["run_shell_command","configure_servo","write_servo_configuration","configure_position_limits","configure_velocity_limits"]},{"label":"mpc_classes","summary":"## Module: Mpc Classes\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Types\n\n- `MPCBalancer`\n- `RemoteControl`\n\n### Functions\n\n- `__init__`","member_count":3,"key_symbols":["RemoteControl","__init__","MPCBalancer"]},{"label":"set_next","summary":"## Module: Set Next\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `start`\n- `set_action`\n- `_next_observation`","member_count":3,"key_symbols":["_next_observation","start","set_action"]},{"label":"joint_classes","summary":"## Module: Joint Classes\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Types\n\n- `JointLimit`\n- `Joint`\n\n### Functions\n\n- `__init__`","member_count":3,"key_symbols":["__init__","JointLimit","Joint"]},{"label":"del","summary":"## Module: Del\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `close`\n- `__del__`","member_count":2,"key_symbols":["__del__","close"]},{"label":"add","summary":"## Module: Add\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `add_target_frames`","member_count":2,"key_symbols":["add_target_frames","__init__"]},{"label":"init_prox","summary":"## Module: Init Prox\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `ProxQPWorkspace`\n\n### Functions\n\n- `__init__`","member_count":2,"key_symbols":["__init__","ProxQPWorkspace"]},{"label":"close","summary":"## Module: Close\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__del__`\n- `close`","member_count":2,"key_symbols":["__del__","close"]},{"label":"group_23","summary":"## Module: Group 23\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]},{"label":"serialize","summary":"## Module: Serialize\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `serialize`","member_count":1,"key_symbols":["serialize"]},{"label":"group_25","summary":"## Module: Group 25\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]},{"label":"reset","summary":"## Module: Reset\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `reset`","member_count":1,"key_symbols":["reset"]},{"label":"step","summary":"## Module: Step\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `step`","member_count":1,"key_symbols":["step"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'configure_interfaces' is 73 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_dtype_consistency' is 52 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'setUp' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_joint_properties_initialization' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_friction_computation_with_friction' is 70 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_friction_stiction_threshold' is 62 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'test_torque_measurement_noise' is 112 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_torque_measurement_noise_threshold' is 76 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'test_torques_are_nonzero_with_actions' is 114 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'test_torque_control_noise' is 101 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_torque_control_noise_threshold' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_control_vs_measurement_noise_independence' is 87 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_inertia_randomization_initialization' is 71 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_randomize_inertias_method' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_randomize_inertias_repeatability' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_apply_external_forces_world_frame' is 71 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_apply_external_forces_local_frame' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_apply_external_forces_multiple_steps' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_apply_external_forces_update_forces' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_get_contact_points_basic' is 79 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'test_get_contact_points_with_link_name' is 192 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'test_get_contact_points_base_link' is 112 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'mock_get_contact_points_side_effect' is 56 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_apply_external_forces_with_external_force_class' is 84 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_apply_external_forces_mixed_formats' is 51 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'__init__' is 129 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'run' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 59 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 57 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 52 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'compute_ground_velocity' is 72 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 69 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'__init__' is 130 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__get_imu_observation' is 60 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'compute_joint_torque' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_contact_points' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 52 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'__create_servo_spaces' is 113 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 57 lines long","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: main → _is_cxx → main","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: run → get_lifting_force → run","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: run → print_contact_details → run","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 20 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

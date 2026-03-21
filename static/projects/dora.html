@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>dora — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>dora</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#dea584"></span> rust 92.4%</span>
+        
+            <span class="badge"><span class="badge-dot" style="background:#3178c6"></span> typescript 6.4%</span>
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 0.6%</span>
+        
+            <span class="badge"><span class="badge-dot" style="background:#f1e05a"></span> javascript 0.6%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">
+
+**Codeilus** is a Rust-powered tool that takes any codebase and turns it into a **gamified, interactive learning experience** you can explore in your browser. Think of it like Duolingo, but instead of learning Spanish, you're learning how a software project works — its architecture, key symbols, how modules connect, and why things are built the way they are. It parses source code, builds a knowledge graph of symbols and relationships, generates narratives and quizzes, and serves it all through a web UI with progress tracking and badges.
+
+It's built for **newcomers joining a team**, open-source contributors trying to understand an unfamiliar repo, or anyone who's ever stared at a large codebase thinking "where do I even start?" Rather than reading docs (if they exist) or grep-ing aimlessly, Codeilus creates a structured curriculum — chapters ordered by difficulty, community-detected module clusters, and LLM-generated explanations — so you can learn a codebase the way you'd learn a subject in school.
+
+Under the hood, it's a **modular Rust workspace of ~16 crates**: `codeilus-parse` extracts symbols and imports from source files, `codeilus-graph` builds the dependency/call graph, `codeilus-analyze` detects communities and entry points (like the 23 communities and 1,048 symbols you see above), `codeilus-narrate` and `codeilus-llm` generate human-readable explanations, `codeilus-learn` handles the gamification layer (quizzes, badges, progress), and `codeilus-api` serves it all via an Axum web server. Everything flows through an event bus and SQLite database, keeping the architecture clean and each piece independently testable. It's currently past Sprint 0 (compiles, tests pass, zero warnings) and heading into the feature waves that bring each crate to life.</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>`NORTH_STAR.md`</code> — *The Rosetta Stone*</li>
+            
+                <li><code>Without it, you'll see 16 crates and have no idea how they connect. It maps directly to the **23 communities** in the graph</code> — each community roughly corresponds to a pipeline stage. **Read this before touching any code.**</li>
+            
+                <li><code>`crates/codeilus-core/src/lib.rs` (+ `types.rs`, `ids.rs`, `events.rs`)</code> — *The Shared Contract*</li>
+            
+                <li><code>It defines the vocabulary: `FileId`, `SymbolId`, `Language` (13 variants), `SymbolKind` (10 variants), `EdgeKind`, and the 18-variant `CodeilusEvent` enum that flows through the entire pipeline. The community analysis confirms this</code> — `resolve_fingerprint` (community 9) contains `CodeilusError`, `PipelineRepo`, and `Migrator`, all rooted in core types. **Zero internal dependencies = the codebase's gravity center.**</li>
+            
+                <li><code>`crates/codeilus-app/src/main.rs`</code> — *The Orchestrator*</li>
+            
+                <li><code>50) and the only file that calls into all other crates. It implements the `run_analyze()` function</code> — the 8-step pipeline that parses a repo, builds the knowledge graph, computes metrics, and generates narratives. Understanding this one function shows you the data flow between all 16 crates. The `resolve_tree` community (121 members, the second largest) is largely organized around this orchestration path.</li>
+            
+                <li><code>`crates/codeilus-db/src/lib.rs` (+ `repos/` directory)</code> — *The Persistence Hub*</li>
+            
+                <li><code>`crates/codeilus-api/src/lib.rs` (+ route modules)</code> — *The User-Facing Surface*</li>
+            
+                <li><code>20, appearing 5× in the entry point list) live. The `response_routes_types` community (16 members, 0.18 cohesion) is tight and self-contained</code> — it defines every API response type and route. Reading the route definitions tells you *what questions the frontend can ask*, which in turn reveals what each backend crate must provide. It's the "demand side" that makes the "supply side" (parse, graph, metrics) make sense.</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Codeilus Architecture: A Guided Tour
+
+**The Front Door and the Post Office.** Every request into Codeilus enters through one of two `main` entry points — the CLI binary and the web server. Think of the **router/API layer** (community `router_list`, `response_routes_types`) as the post office: it receives incoming HTTP requests, figures out which department should handle them, and routes them accordingly. The `router()` functions (there are several, one per domain) assemble Axum route trees for files, symbols, communities, chapters, and more. Types like `HealthResponse`, `ChapterResponse`, and `SearchResult` define the envelopes those responses travel in. The `AppCache` acts as a shared mailroom, holding pre-computed data so the post office doesn't have to re-fetch everything on every request.
+
+**Parsing and Understanding the Code.** When Codeilus ingests a repository, the **parse pipeline** (communities `parse_extracts`, `fetch_parse`, `resolve_tree`) does the heavy lifting. Think of it as the intake department at a hospital — it triages every source file, extracts symbols (819 functions, 165 structs, 24 interfaces, etc.), resolves imports, and classifies each symbol's role. The `resolve_tree` community is the largest working group here (121 members), handling everything from `parse_repository_with_tempdir` to `classify_symbol` and `score_entry_points`. It builds the foundational data — parsed files, symbol metadata, dependency edges — that every downstream module relies on. The `file_reader_interfaces` and `read` micro-communities are its humble helpers, abstracting raw file I/O behind a clean `Reader`/`FileReader` trait.
+
+**Storage, Search, and the Data Backbone.** Once code is parsed, the **repository/database layer** (communities `list_insert`, `list_empty`, `insert_file`, `insert_snippet`, `resolve_fingerprint`) persists everything into SQLite through structured repos — `FileRepo`, `SymbolRepo`, `PipelineRepo`, and friends. Think of this layer as the filing cabinet system: `insert_file` handles storing and retrieving files, `insert_snippet` manages code excerpts with context windows, and `list_insert` powers queries like "list hotspots" or "search unified." The `resolve_fingerprint` community adds cross-cutting concerns — error types (`CodeilusError`), security patterns, migration management, and configuration defaults. Together, these modules ensure that every piece of extracted knowledge is stored once and queryable from anywhere, honoring the architecture rule that all DB operations flow through repository structs.
+
+**Intelligence: Graphs, Metrics, Diagrams, and Narratives.** The analytical brain of Codeilus lives in several specialized communities. The **graph and metrics** modules (`generate_mermaid`, `escape_flowchart`, `batched_placeholder`) transform raw symbol relationships into visual diagrams — Mermaid flowcharts, architecture graphs, community visualizations — with careful label escaping and node-limit controls. The **LLM and narrative** layer (`prompt_accumulator`, `row_curriculum`, `chapter_record`) is like the storytelling department: it takes the structured analysis and, using prompt templates and an `AnthropicApiStub`/`NoOpProvider` abstraction, generates human-readable chapters, quizzes, and heritage questions. The `EventBus` in `row_curriculum` acts as the internal PA system — broadcasting progress updates so that the UI, the narrator, and the learning engine all stay in sync without directly coupling to each other.
+
+**The Learning Experience.** At the outermost ring, the **curriculum and gamification** modules (`curriculum_chapter`, `chapter_record`, `index`) assemble everything into an interactive learning journey. `curriculum_chapter` estimates difficulty, orders content for reading, and checks badge criteria. `chapter_record` tracks learner progress — quizzes passed, sections completed, exploration recorded — and awards badges like "Chapter Champion." The tiny `index` community generates the landing page that lists available repositories. Data flows in one direction: raw code → parsed symbols → stored relationships → computed metrics/graphs → LLM-generated narratives → curriculum chapters → learner progress. This clean pipeline, glued together by the `EventBus` and shared `core` types, is what lets Codeilus turn any codebase into a gamified course with a single command.</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `new` (Function) — used by 602 other symbols
+- `get` (Function) — used by 441 other symbols
+- `clone` (Function) — used by 311 other symbols
+- `insert` (Function) — used by 171 other symbols
+- `connection` (Function) — used by 140 other symbols
+- `as_str` (Function) — used by 62 other symbols
+- `id_display` (Function) — used by 40 other symbols
+- `CodeilusError` (Enum) — used by 35 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 213 symbols, cohesion 0%
+- **Row Curriculum** — 54 symbols, cohesion 2%
+- **List Empty** — 85 symbols, cohesion 3%
+- **List Insert** — 66 symbols, cohesion 4%
+- **Insert Snippet** — 46 symbols, cohesion 4%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">Here's why developers are buzzing about **Codeilus**:
+
+**Codeilus is attacking one of the most underserved pain points in modern software engineering: the comprehension gap.** AI tools have supercharged how fast we *write* code, but understanding unfamiliar codebases is still a brutal slog of grepping, guessing, and asking whoever's been around longest. Codeilus flips the script entirely — you point a single Rust binary at any repo, and it extracts the full structural fingerprint (symbols, relationships, dependency communities, metrics), then transforms it into a gamified, browser-based learning experience with chapters, quizzes, architecture diagrams, and LLM-narrated explanations. The numbers from this analysis alone tell the story: **1,048 symbols, 3,718 relationships, and 23 automatically detected communities** — that's not a toy demo, that's a real codebase being decomposed into navigable, teachable units with cohesion scores and ranked entry points.
+
+What's *really* turning heads, though, is the ambition of the two-mode design and the engineering rigor behind it. Locally, you get a full SvelteKit 5 interactive explorer with streaming Q&A powered by Claude, impact analysis ("what breaks if I touch this function?"), and complexity heatmaps. But the killer feature might be **static grasp pages** — self-contained HTML files under 500KB that give you a "5-minute understanding" of any trending GitHub repo, deployable to a CDN via cron. The whole thing is built as 16 purpose-separated Rust crates with strict dependency rules (`codeilus-core` is the shared contract, zero cross-dependencies between siblings), event-driven architecture via `tokio` broadcast channels, and zero-tolerance for clippy warnings. It's the kind of project that makes you think, "Why didn't this exist already?" — and the fact that it's a single binary with no runtime dependencies beyond Claude Code makes the adoption story incredibly clean.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">157</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">22180</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">1048</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">3.9</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-app/src/main.rs</code></div>
+                <div class="card-meta">complexity: 22.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-metrics/src/lib.rs</code></div>
+                <div class="card-meta">complexity: 21.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-graph/src/entry_points.rs</code></div>
+                <div class="card-meta">complexity: 20.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-metrics/src/git.rs</code></div>
+                <div class="card-meta">complexity: 17.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-metrics/src/modularity.rs</code></div>
+                <div class="card-meta">complexity: 16.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-graph/src/community.rs</code></div>
+                <div class="card-meta">complexity: 12.8 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-metrics/src/tfidf.rs</code></div>
+                <div class="card-meta">complexity: 11.5 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-export/src/data_loader.rs</code></div>
+                <div class="card-meta">complexity: 11.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-db/src/lib.rs</code></div>
+                <div class="card-meta">complexity: 10.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>./crates/codeilus-graph/src/builder.rs</code></div>
+                <div class="card-meta">complexity: 9.8 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (23)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">213 symbols</div>
+                        <p>("misc")
+
+Think of this community as the **shared toolbox** that every worker on a construction site reaches into. It contains the core data types, configuration structs, and interfaces that the rest of Codeilus relies on—things like `FileRepo`, `ChapterRepo`, `LlmConfig`, `Badge`, `GraphNode`, `Import`, and event enums (`LlmEvent`, `FlowNodeKind`). Because these types define the "contracts" between crates (what a graph edge looks like, what a learner's stats contain, what an LLM request/response carries), almost every other module depends on them, yet this community doesn't depend heavily on anything else. Its cohesion score is 0.00 precisely because it's a grab-bag of foundational definitions rather than a single tightly-focused feature.
+
+If Codeilus were a restaurant, Community 1 would be the menu, the plate shapes, and the order slips—none of them *cook* anything, but the kitchen, the waitstaff, and the cashier all need to agree on their format. Key types to know: **repository structs** (`FileRepo`, `ChapterRepo`, `HarvestRepoRepo`) for database access, **response/request DTOs** (`GraphResponse`, `QuizAnswerRequest`, `LearnerStatsResponse`) for the API layer, and **provider enums** (`LlmProviderKind`, `Badge`) for configuration. When you add a new feature in another crate and need a shared type, this is where it lives (via `codeilus-core`).
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: QueryGraphInput, GetContextInput, GetImpactInput, GetDiagramInput, GetMetricsInput</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">resolve_tree</div>
+                        <div class="card-meta">121 symbols</div>
+                        <p>("resolve_tree")
+
+This community is the **detective squad** of the codebase—it figures out what your code *means* and how it's structured. Its members handle parsing repositories (`parse_repository_with_tempdir`), resolving imports and crate paths (`resolve_external_crate`, `extract_imports`, `extract_heritage`), building dependency graphs, detecting communities (`detect_communities`, `compute_cohesion`), scoring entry points, and even running full-text search (`search_symbols`, `test_search_files_by_language`). It also contains the main API endpoint wiring (`serve_until_signal`, `entry_point_handler`) and export logic (`generate_index`). Essentially, it turns a raw directory of source files into a rich, queryable knowledge graph.
+
+Imagine you dump a jigsaw puzzle on a table: Community 2 is the person who sorts pieces by color, finds the edge pieces first, and starts assembling the picture. It **depends outward** on Community 1's shared types (for IDs, configs, and DTOs) and on repository helpers from Communities 3–5 for actual database reads/writes. Its 298+ external edges reflect how central analysis and resolution logic is—nearly every downstream feature (metrics, narratives, diagrams) starts with data this community produces.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: new, query_graph, get_context, get_impact, explain_symbol</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">list_empty</div>
+                        <div class="card-meta">85 symbols</div>
+                        <p>("list_empty")
+
+Think of Community 3 as the **quality-assurance lab**. It is dominated by test functions and builder helpers that verify the codebase's data layer and rendering pipeline work correctly, especially around edge cases like empty databases, missing files, and boundary conditions (`list_files_empty`, `search_empty_query`, `export_data_empty_db`, `get_file_not_found`). It also houses important production logic for storing parsed data (`store_parsed`, `store_parsed_data_in_db`), building the diagram IR (`build_ir`, `mermaid_inlined`), HTML rendering (`render_html_creates_file`, `render_html_has_footer`), and narrative/chapter generation (`make_big_picture_chapter`, `label_communities_semantic`).
+
+If Codeilus were a car factory, this community runs the crash tests and paint inspections. It leans heavily on the database setup utilities (`setup_db → in_memory`, `clear_analysis_data`) and on repository insert/list methods from other communities (471+ external edges), meaning it exercises almost every CRUD path. Key items to know: **`store_parsed`** is the bridge between the parser and the DB, **`build_ir`** converts analysis results into diagram intermediate representation, and the many `render_html_*` functions produce the final exportable HTML learning pages.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: query_symbols, trace_call_chain, impact_analysis, find_tests_for, flush_process</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">router_list</div>
+                        <div class="card-meta">78 symbols</div>
+                        <p>("router_list")
+
+This community is the **front desk and switchboard** of Codeilus. It defines the HTTP routers and API handlers (`router`, `app`, `health_check`, `get_file`, `get_symbol`, `submit_quiz_answer`, `list_chapters`, `list_sections`) that the browser-based frontend talks to. Alongside routing, it contains the security-testing suite (`security_sql_injection`, `security_eval`, `security_hardcoded_secret`, `security_clean_file`) and several repository list/get operations (`list_by_file`, `list_by_kind`, `list_by_severity`, `list_annotations`). Helper functions like `tokenize_name`, `estimate_from_loc`, and `next_id` also live here, supporting both the API layer and the data layer.
+
+Picture a hotel lobby: Community 4 is the concierge who takes your request ("show me chapter 3," "submit my quiz answer") and routes it to the right department. It depends on Communities 1 and 5 for shared types and lower-level DB operations (170+ external edges to `insert`, `build`, `new`, etc.), and its multiple `router` functions are composed together into the single Axum `app` that `serve_until_signal` (in Community 2) ultimately launches. If you're adding a new API endpoint, this is where it goes.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: fmt, default, next_id, tfidf_keywords, tfidf_camel_case_split</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">list_insert</div>
+                        <div class="card-meta">66 symbols</div>
+                        <p>("list_insert")
+
+Community 5 is the **warehouse and inventory clerk**—it handles the bulk of CRUD (Create, Read, Update, Delete) operations against the SQLite database. You'll find insert, list, get, and delete functions for nearly every domain entity: files (`file_insert_and_get`, `list_files`), symbols (`symbol_insert_and_get`, `search_symbols`), patterns (`pattern_repo_filter_by_severity`, `insert_batch`), annotations (`delete_annotation`, `toggle_flag`), narratives (`narrative_repo_insert_and_get`, `narrative_repo_get_by_kind_and_target`), chapters/sections (`insert_section`, `get_chapter_quiz`), and communities (`build_community`). It also owns import-resolution helpers (`resolve_python_import`) and graph-building utilities (`build_heritage_edges`, `architecture_inter_community_edges`).
+
+Think of it as the stockroom behind a store: every shelf is labeled, and this community knows how to put items on shelves, find them again, count them, and clear them out. It connects to Community 1 for type definitions (IDs, enums, structs) and is called extensively by Communities 2–4 whenever they need to persist or retrieve data (214+ external edges). If you're writing a new repository method—`list_by_*`, `insert_*`, `delete_*`—it most likely belongs here alongside `connection()` and `setup` helpers.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: new, sink, publish_and_receive, architecture_inter_community_edges, complexity_fallback</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">generate_mermaid</div>
+                        <div class="card-meta">63 symbols</div>
+                        <p>("generate_mermaid")
+
+Think of this community as the **"artist's studio"** of Codeilus — it's responsible for turning raw code structure into visual diagrams you can actually see and understand. Its star players are `FlowchartIR` (an intermediate blueprint for diagrams), `ir_to_mermaid` and `validate_mermaid` (which convert that blueprint into Mermaid diagram syntax and make sure it's well-formed), and helpers like `generate_architecture`, `generate_file_tree`, and `generate_flowchart` that produce different visual perspectives of a codebase. The `TreeNode` enum models hierarchical file/folder structures, while `ProgressTracker` keeps tabs on long-running generation jobs. Utility functions like `check_balanced` guard against malformed output (e.g., unbalanced brackets in Mermaid markup).
+
+This community is a major **consumer** of data from nearly every other part of the system — it pulls file lists, symbols, communities, metrics, narratives, and graph data to compose its visuals. It connects outward to the DB layer (via `seed_db`, `insert`, `update`), the export system (`language_badges`, `communities_with_summaries`), and the curriculum generator. Think of it as the module that reads the whole "book" that other modules wrote and draws the pictures for it. If you're looking at any diagram or visual export in Codeilus, it almost certainly flows through Community 6.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: certain, medium, generate, ir_to_mermaid, flowchart_for_loop</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">row_curriculum</div>
+                        <div class="card-meta">54 symbols</div>
+                        <p>("row_curriculum")
+
+This community is the **"textbook editor"** — it defines the database row types that store nearly every kind of analysis result, and it builds the learning curriculum that turns a codebase into a structured course. The `*Row` structs (`SymbolRow`, `ChapterRow`, `QuizQuestionRow`, `EdgeRow`, `CommunityRow`, `FileMetricsRow`, `NarrativeRow`, `PatternRow`, etc.) are like standardized forms that every other module fills out when saving data to SQLite. On the curriculum side, functions like `generate_curriculum`, `curriculum_topological_order`, and `curriculum_prerequisites` arrange chapters so learners encounter foundational concepts before advanced ones — like making sure you learn "variables" before "closures."
+
+The quiz and event subsystems also live here: `generate_quiz`, `generate_heritage_questions`, and `generate_call_questions` create interactive questions, while `EventBus` and `CodeilusEvent` form the nervous system that lets modules notify each other when something happens (e.g., "parsing is done!"). `HarvestConfig` and `HarvestRepoRow` support ingesting external repos, and `Confidence`/`Severity` tag analysis findings with reliability levels. This community glues the storage schema to the learning experience — almost every other community depends on these row types to persist its work.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: CodeilusTools, Confidence, high, CodeilusEvent, EventBus</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">insert_snippet</div>
+                        <div class="card-meta">46 symbols</div>
+                        <p>("insert_snippet")
+
+Picture this community as the **"warehouse loading dock"** — it handles bulk data insertion, snippet extraction, and real-time event plumbing. The many `insert` and `insert_batch` functions are the workhorses that write files, symbols, edges, patterns, and harvest data into the database, while `delete_all` and `reset_progress` clear things out for fresh runs. The `extract_snippet` function (along with its thorough test suite: `test_extract_snippet_match_found`, `_no_match`, `_short_text`, `_at_start`, `_context_window`) pulls relevant code excerpts to display alongside explanations — like highlighting a quote in a textbook.
+
+On the real-time side, `EventBus` integration (`subscribe`, `publish`, `sink_publishes`, `ws_handler`) lets the frontend receive live progress updates over WebSockets — imagine a delivery tracker that shows parcels arriving in real time. `search_narratives` and `rebuild_index` support full-text search across generated explanations. This module is the plumbing that every write-heavy operation flows through; it connects to the DB pool, the event system, and the metrics layer, ensuring data gets stored reliably and the UI stays informed.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_metrics, subscribe, publish, no_subscribers_ok, sink_publishes</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">resolve_fingerprint</div>
+                        <div class="card-meta">44 symbols</div>
+                        <p>("resolve_fingerprint")
+
+Think of this community as the **"detective bureau"** — it identifies, fingerprints, and resolves code entities so the rest of the system can reliably track them. `compute_fingerprint` and `compute_fingerprint_from_hash` assign unique signatures to repo snapshots (like a DNA test for a commit), while `resolve_import`, `resolve_ts_import`, `resolve_rust_import`, and `resolve_generic_import` figure out where an `import` statement actually points — translating a vague address into a concrete file. The code-smell detectors (`god_class_detected`, `long_method_50/100/250_lines`, `SecurityPattern`) act like health inspectors flagging problem areas.
+
+Key infrastructure types also live here: `DbPool` (the database connection pool), `Migrator` (schema migrations), `BatchWriter` (efficient bulk writes), `CodeilusError` (the unified error enum), `NewFile`/`NewSymbol` (structs for creating new records), and `Cli` (the command-line interface entry point). This makes Community 9 a foundational layer — it provides the core plumbing and identity resolution that crates like `codeilus-parse`, `codeilus-graph`, and `codeilus-analyze` all depend on to do their work.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: QuerySymbolsInput, CodeilusError, id_display, estimate_complexity, build_dep_edges</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">batched_placeholder</div>
+                        <div class="card-meta">41 symbols</div>
+                        <p>("batched_placeholder")
+
+Imagine this community as the **"ghostwriter's desk"** — it manages LLM-powered narrative generation and gracefully falls back to placeholder text when no AI model is available. `NarrativeGenerator` and `generate_one` drive the creation of human-readable explanations for code modules, while `PromptTemplate` and `get_prompt` assemble the prompts sent to an LLM. The `split_batched_response` family of functions parses a single large LLM response back into individual module summaries — like slicing one long letter into separate chapters. When the LLM is unavailable, `placeholder_for`, `placeholder_overview`, `why_trending_placeholder`, and `contribution_guide_placeholder` fill in sensible stand-in text so the pipeline never stalls.
+
+The community also houses core domain types that feed into narrative generation: `Language` (the programming language enum), `KnowledgeGraph`, `Community`, `GraphBuilder`, `ParseConfig`, and `Narrative`. Helper functions like `compute_heatmap`, `count_sloc`, `detect_processes`, and `normalize` supply the quantitative context that narratives reference. It connects outward to the graph community (for structure), the metrics layer (for stats), and the parse layer (for source data) — making it the bridge between raw analysis and the friendly, readable explanations that Codeilus presents to learners.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Language, make_parsed_file, MetricsReport, count_sloc, compute_heatmap</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">curriculum_chapter</div>
+                        <div class="card-meta">38 symbols</div>
+                        <p>("curriculum_chapter")
+
+Think of this module as the **course designer** for Codeilus's learning experience. Just like a teacher who takes a textbook and breaks it into chapters, sections, and difficulty levels, `curriculum_chapter` takes the analyzed codebase and builds a structured curriculum from it. Key functions like `make_community_chapter`, `make_section`, and `make_final_chapter` assemble the learning path, while `estimate_difficulty` and `curriculum_difficulty_from_complexity` decide how hard each piece is (like labeling a trail as "easy" or "expert"). It also handles progress tracking (`complete_section`, `get_chapter_progress`), XP rewards (`progress_xp_section_and_chapter_bonus`, `progress_quiz_xp`), and badges (`check_badges`, `badge_quiz_master`). It leans heavily on Community 15 ("chapter_record") for persistence and Community 13 for parsed data, making it the central orchestrator of the gamified learning flow.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: as_str, community_labels_use_directory, find_common_prefix, build_overview, setup_db</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">fetch_parse</div>
+                        <div class="card-meta">37 symbols</div>
+                        <p>("fetch_parse")
+
+This community is the **delivery truck and loading dock** — it's responsible for fetching data (from the backend API or external sources) and kicking off parsing. On the frontend side, you'll find a fleet of `fetch*` functions (`fetchFiles`, `fetchSymbols`, `fetchChapters`, `fetchGraph`, etc.) that act like waiters taking your order to the kitchen and bringing back results. On the backend side, functions like `parse`, `parse_file`, and `detect_language` handle the initial ingestion of source code, while `scrape_trending` pulls data from external sources. It connects outward to Community 13 ("parse_extracts") for the heavy-lifting extraction logic (tree-sitter queries, symbol extraction) and feeds its results into the DB and graph layers. If the codebase were a restaurant, this module seats the guests and places the orders.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: env_parse, publish, typescript_extracts_symbols, rust_extracts_symbols, incremental_parse_skips_unchanged_files</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">parse_extracts</div>
+                        <div class="card-meta">34 symbols</div>
+                        <p>("parse_extracts")
+
+This is the **microscope and dissection table** of the codebase. While Community 12 kicks off parsing, Community 13 does the actual deep extraction work — pulling symbols, imports, heritage (inheritance), and call relationships out of raw source code. Key types include `Symbol` (representing a function, class, or variable found in code), `LanguageQueries` (the tree-sitter query definitions per language), and helpers like `create_parser`, `extract`, `count_sloc`, and `from_extension`. Language-specific functions like `python_extracts_symbols`, `typescript_extracts_heritage`, and `get_ts_language` show that this module speaks multiple programming languages fluently. It also handles configuration (`from_env`, `cors_origins`) and repository walking (`walk_files`, `parse_repository`). Everything extracted here flows into `codeilus-db` for storage and into the graph/curriculum layers upstream.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: from_extension, from_env, env_parse_bool, fixtures_dir, python_extracts_symbols</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">prompt_accumulator</div>
+                        <div class="card-meta">33 symbols</div>
+                        <p>("prompt_accumulator")
+
+Think of this module as the **interview coach** that talks to an LLM (like Claude) on behalf of the system. It constructs prompts (`prompt`, `build_context`, `context_overview`, `context_symbol`), sends them to an LLM provider via the `LlmProvider` trait, and accumulates the streamed response token-by-token using functions like `feed`, `finish`, and `is_message_stop`. Key types include `LlmRequest` (the envelope for a prompt), `ClaudeCli` and `AnthropicApiStub` (concrete providers), and `NoOpProvider` (a silent stand-in for testing). Helper functions like `is_garbage_response` filter out bad outputs, while `prompt_graceful_degradation` ensures the system still works if the LLM is unavailable. This module connects to `codeilus-llm` and feeds generated narratives, explanations, and quiz content into the curriculum and narration layers.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: LlmRequest, LlmProvider, NoOpProvider, AnthropicApiStub, is_message_stop</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">chapter_record</div>
+                        <div class="card-meta">30 symbols</div>
+                        <p>("chapter_record")
+
+If Community 11 is the course designer, Community 15 is the **grade book and trophy case**. It's the persistence and progress-tracking backbone that records everything a learner does: completing sections (`record_section`, `mark_section_complete`), taking quizzes (`record_quiz`, `count_quizzes_passed`), exploring code (`record_explore`), and earning badges (`insert_badge`, `list_badges`, `badge_first_steps`, `badge_chapter_champion`). Key types include `ExportData` (for packaging progress data) and the DB pool created via `in_memory` and `apply_pending` (migrations). Functions like `get_overall_progress`, `compute_level`, `get_learning_status`, and `count_completed_chapters` roll up raw records into meaningful stats. It also supports the curriculum layer through `setup_chapter_with_sections` and `make_supporting_chapter`, and connects outward to the diagram and export modules (`get_diagram`, `delete_all`, `render_with_env`). Nearly every gamification feature in Codeilus reads from or writes to this community.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_diagram, get_learning_status, new, record_section, get_chapter_progress</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">escape_flowchart</div>
+                        <div class="card-meta">20 symbols</div>
+                        <p>("escape_flowchart")
+
+Think of this community as the **"diagram artist's toolkit."** When Codeilus wants to draw a flowchart of your code (showing if/else branches, loops, and function calls), it first builds an internal sketch called a `FlowchartIR` (intermediate representation). But diagram renderers like Mermaid choke on special characters—quotes, brackets, and long labels can break the output. That's where the `escape_label`, `escape_newlines`, and `mermaid_escape_label` helpers come in: they're like a proofreader who sanitizes every label before it goes on the whiteboard. The `ir_to_mermaid()` function then translates the clean sketch into actual Mermaid syntax with proper node shapes (diamonds for decisions, rectangles for processes). Alongside these rendering helpers, the community also bundles the database batch-insert functions (`file_insert_batch`, `edge_insert_batch`, `insert_members_batch`) and lookup functions (`get_by_path`, `list_members`) that store and retrieve the graph data these diagrams are built from.
+
+The low cohesion (0.25) reflects the fact that this community straddles two concerns—**diagram rendering** (in `codeilus-diagram`) and **database operations** (in `codeilus-db`)—that are logically related because flowchart tests need to insert test data before verifying diagram output. Key types to know: `FlowchartIR` (the intermediate flowchart model), `EdgeRepo` / `FileRepo` (database repositories), and the various `escape_*` utility functions. It connects outward to `codeilus-parse` for symbol data and feeds Mermaid strings to the frontend for display.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: make_symbol, flowchart_simple_function, flowchart_if_else, flowchart_nested, escape_label</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">insert_file</div>
+                        <div class="card-meta">19 symbols</div>
+                        <p>("insert_file")
+
+This community is the **"filing cabinet"** of Codeilus—it's the collection of database repository methods that store, retrieve, and manage file and symbol records. Imagine every source file you analyze gets a card in a cabinet (`insert`, `insert_batch`), each card tagged with metadata like language and line count. Symbols (functions, structs, traits) within those files get their own sub-cards (`list_by_file`, `list_by_name`, `find_by_symbol`). You can search the cabinet by prefix (`search`), clean out an entire drawer (`delete_all`, `delete_by_file`), or count how many cards you have (`count`). The `community_repo_insert_and_list` integration test acts like a full dress rehearsal, inserting communities, adding members, and verifying everything cleans up properly.
+
+Key types: `FileRepo`, `SymbolRepo`, `CommunityRepo` (all in `codeilus-db/src/repos/`), and their row types `FileRow`, `SymbolRow`. Every repo takes a shared `DbPool` connection and follows the same pattern—construct with `new()`, then call CRUD methods. This community is foundational: the API routes (Community 18), the analysis pipeline, and the graph builder all depend on these repos to persist and query data. Tests use in-memory SQLite via `DbPool::in_memory()` for fast, isolated verification.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: file_get_by_path, file_get_by_path_not_found, community_repo_insert_and_list, new, insert</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">response_routes_types</div>
+                        <div class="card-meta">16 symbols</div>
+                        <p>("response_routes_types")
+
+Think of this community as the **"front desk"** of Codeilus—it defines every HTTP endpoint the browser talks to and the exact shape of every request and response. The `router()` function is the receptionist who directs incoming requests to the right handler: health checks go to `HealthResponse`, search queries use `SearchParams` → `SearchResult`, chapter lookups return `ChapterResponse`, and so on. Specialized request types like `AskRequest` (for LLM-powered Q&A with streaming) and `GraphQuery` (for fetching the code graph) ensure each endpoint knows exactly what data to expect. `AppCache` acts like a sticky-note memory at the front desk—a Moka in-memory cache with a 10-minute TTL so frequently requested chapters and narratives don't hit the database every time.
+
+Key types: `ApiError` (a unified error wrapper that converts internal `CodeilusError` into proper HTTP status codes + JSON), `FrontendAssets` (uses `rust_embed` to bake the compiled SPA directly into the binary—no separate file server needed), and the various `*Response` structs that serialize to JSON. This community lives in `codeilus-api` and depends on `codeilus-core` for shared error types and ID newtypes. It's the boundary layer between the Rust backend and the React frontend.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: SearchResult, ApiError, FrontendAssets, AppCache, AskRequest</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">index</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>("index")
+
+This tiny community is like a **"table of contents generator"** for exported Codeilus sites. When you export one or more analyzed repositories as static HTML (for hosting on GitHub Pages or a shared drive), `generate_index()` creates a landing `index.html` that lists all the exported repos with their metadata—essentially a homepage. The two test functions, `index_page_lists_repos` and `index_page_size`, verify that the generated page actually contains the expected repo entries and renders at a reasonable size.
+
+It lives in `codeilus-export/src/index.rs` and uses Minijinja for HTML templating. Its high cohesion (0.67) reflects that all three members are tightly focused on one job. It connects to the broader export pipeline: after `export_repo()` finishes writing per-repo pages, `generate_index()` ties them together into a navigable site.
+
+---</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: index_page_lists_repos, index_page_size, generate_index</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">file_reader_interfaces</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>("file_reader_interfaces")
+
+This is the **"scout"** of the codebase—before Codeilus can analyze anything, it needs to walk through a project's directory tree and figure out which files are actually source code worth parsing. The `Reader` trait defines the contract ("give me a list of files to read"), and `FileReader` is the concrete implementation that walks the filesystem using the `ignore` crate (which automatically respects `.gitignore` rules). It detects each file's programming language by extension, skips files over 20 MB, and filters out hidden or irrelevant files.
+
+With perfect cohesion (1.00) and just two members, this is the most focused community in the graph. It lives in `codeilus-parse/src/walker.rs` and is the very first step in the analysis pipeline: `parse_repository()` calls the file walker to discover files, then hands each one to tree-sitter for parsing. Every other community downstream—symbols, graphs, diagrams, narratives—depends on files this scout discovers.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Reader, FileReader</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">read</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>("read")
+
+Think of this community as a **mailroom clerk**: it receives raw input (`read`) and then sorts and handles it (`process`). The `read` function is responsible for fetching or ingesting data from a source, while `process` transforms or acts on that data once it's been read in. With a perfect cohesion score of 1.00, these two functions work hand-in-hand as a tight read-then-process pipeline. Other parts of the codebase likely call into this pair whenever they need to load and interpret a specific kind of data.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: read, process</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">read_2</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>("read_2")
+
+This community is a **second mailroom clerk** handling a different type of mail. It has the same shape as Community 21—a `read` function paired with a `process` function—but operates on a distinct data source or format. Think of it like having one clerk for letters and another for packages: same workflow, different content. The perfect cohesion (1.00) again shows these two functions are tightly coupled. If you're tracing data flow through the codebase, this module represents an alternative or parallel ingestion path alongside Community 21's reader.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: read, process</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">invalidate_all</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>("invalidate_all")
+
+Imagine a **reset button** on a whiteboard that erases everything so you can start fresh—that's `invalidate_all`. This single-member community exposes one function whose job is to mark all cached or stored data as stale, forcing downstream consumers to re-read or recompute their results. It acts as a system-wide cache-buster that other modules (including the read pipelines in Communities 21 and 22) depend on to know when their previously loaded data is no longer trustworthy. Despite being just one function, it plays a critical coordination role in keeping the rest of the codebase consistent after changes occur.</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: invalidate_all</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (139)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'query_graph' is 70 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_context' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_impact' is 52 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'understand_codebase' is 58 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'trace_call_chain' is 70 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'impact_analysis' is 73 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'find_related_code' is 99 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'explain_file' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'find_tests_for' is 58 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'suggest_reading_order' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_community_context' is 88 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'build_ir' is 170 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'validate' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'render_node' is 91 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'generate' is 111 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'make_simple_graph' is 62 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'modularity_q_score' is 76 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'compute_modularity' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'compute_metrics' is 216 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'compute_git_metrics' is 94 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'compute_tfidf' is 59 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'louvain_two_clusters' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'tiny_communities_merged' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'build_graph_integration' is 65 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'score_entry_points' is 85 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'resolve_rust_import' is 99 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'resolve_external_crate' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'resolve_python_import' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'build' is 123 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'label_communities_semantic' is 173 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'detect_communities' is 170 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'merge_small_communities' is 65 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'incremental_parse_skips_unchanged_files' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'extract_definitions' is 87 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'extract_imports' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'extract_heritage' is 56 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'parse_repository_incremental' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'search_symbols' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'search_narratives' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'extract_snippet' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'parse_stream_line' is 68 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'build_overview' is 93 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'build_community' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'build_symbol' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'make_test_graph' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'prompt_once' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'prompt_stream' is 90 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'graph_api_returns_nodes_with_community_ids' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'run_analyze' is 453 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'main' is 156 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'persist_parsed_files' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'apply_pending' is 128 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'make_test_graph' is 126 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'generate' is 139 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'make_big_picture_chapter' is 103 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'make_community_chapter' is 144 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'make_final_chapter' is 111 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'make_supporting_chapter' is 112 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'topological_sort_communities' is 103 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'generate_quiz' is 58 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'generate_heritage_questions' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'graph_with_communities' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'overview_placeholder' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'architecture_placeholder' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'module_summary_placeholder' is 67 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'generate_all' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'generate_module_summaries_batched' is 114 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'generate_one_internal' is 80 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'seed_db' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'load_export_data' is 187 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'clone_all' is 65 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'parse_trending_html' is 74 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'ask_stream' is 135 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_community_graph' is 93 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_graph' is 96 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'list_processes' is 56 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'get_file_source' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'list_symbols' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'askQuestion' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: connection → get → connection</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: setup → clear_analysis_data → setup</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: LlmProvider → is_garbage_response → LlmProvider</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 19 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 23 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 19 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 19 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 17 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 19 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 18 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 20 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 15 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 32 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 23 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── ./crates/codeilus-analyze/src/circular_deps.rs
+├── ./crates/codeilus-analyze/src/god_class.rs
+├── ./crates/codeilus-analyze/src/lib.rs
+├── ./crates/codeilus-analyze/src/long_method.rs
+├── ./crates/codeilus-analyze/src/security.rs
+├── ./crates/codeilus-analyze/src/test_gap.rs
+├── ./crates/codeilus-analyze/src/types.rs
+├── ./crates/codeilus-analyze/tests/detectors.rs
+├── ./crates/codeilus-api/src/error.rs
+├── ./crates/codeilus-api/src/lib.rs
+├── ./crates/codeilus-api/src/routes/annotations.rs
+├── ./crates/codeilus-api/src/routes/ask.rs
+├── ./crates/codeilus-api/src/routes/chapters.rs
+├── ./crates/codeilus-api/src/routes/files.rs
+├── ./crates/codeilus-api/src/routes/graph.rs
+├── ./crates/codeilus-api/src/routes/health.rs
+├── ./crates/codeilus-api/src/routes/learning.rs
+├── ./crates/codeilus-api/src/routes/mod.rs
+├── ./crates/codeilus-api/src/routes/narratives.rs
+├── ./crates/codeilus-api/src/routes/search.rs
+├── ./crates/codeilus-api/src/routes/symbols.rs
+├── ./crates/codeilus-api/src/routes/ws.rs
+├── ./crates/codeilus-api/src/state.rs
+├── ./crates/codeilus-api/tests/api_routes.rs
+├── ./crates/codeilus-app/src/main.rs
+├── ./crates/codeilus-app/tests/integration_test.rs
+├── ./crates/codeilus-core/src/config.rs
+├── ./crates/codeilus-core/src/error.rs
+├── ./crates/codeilus-core/src/event_bus.rs
+├── ./crates/codeilus-core/src/events.rs
+├── ./crates/codeilus-core/src/ids.rs
+├── ./crates/codeilus-core/src/lib.rs
+├── ./crates/codeilus-core/src/types.rs
+├── ./crates/codeilus-db/src/batch_writer.rs
+├── ./crates/codeilus-db/src/lib.rs
+├── ./crates/codeilus-db/src/migrations.rs
+├── ./crates/codeilus-db/src/pool.rs
+├── ./crates/codeilus-db/src/repos/annotation_repo.rs
+├── ./crates/codeilus-db/src/repos/chapter_repo.rs
+├── ./crates/codeilus-db/src/repos/community_repo.rs
+├── ./crates/codeilus-db/src/repos/edge_repo.rs
+├── ./crates/codeilus-db/src/repos/edges.rs
+├── ./crates/codeilus-db/src/repos/file_metrics_repo.rs
+├── ./crates/codeilus-db/src/repos/file_repo.rs
+├── ./crates/codeilus-db/src/repos/files.rs
+├── ./crates/codeilus-db/src/repos/harvest_repo.rs
+├── ./crates/codeilus-db/src/repos/mod.rs
+├── ./crates/codeilus-db/src/repos/narrative_repo.rs
+├── ./crates/codeilus-db/src/repos/pattern_repo.rs
+├── ./crates/codeilus-db/src/repos/pipeline_repo.rs
+├── ./crates/codeilus-db/src/repos/process_repo.rs
+├── ./crates/codeilus-db/src/repos/progress_repo.rs
+├── ./crates/codeilus-db/src/repos/quiz_repo.rs
+├── ./crates/codeilus-db/src/repos/symbol_repo.rs
+├── ./crates/codeilus-db/src/repos/symbols.rs
+├── ./crates/codeilus-db/tests/clear_analysis.rs
+├── ./crates/codeilus-db/tests/persist_parsed.rs
+├── ./crates/codeilus-db/tests/repos.rs
+├── ./crates/codeilus-diagram/src/architecture.rs
+├── ./crates/codeilus-diagram/src/file_tree.rs
+├── ./crates/codeilus-diagram/src/flowchart.rs
+├── ./crates/codeilus-diagram/src/lib.rs
+├── ./crates/codeilus-diagram/src/mermaid.rs
+├── ./crates/codeilus-diagram/src/types.rs
+├── ./crates/codeilus-export/src/data_loader.rs
+├── ./crates/codeilus-export/src/index.rs
+├── ./crates/codeilus-export/src/lib.rs
+├── ./crates/codeilus-export/src/renderer.rs
+├── ./crates/codeilus-export/src/template.rs
+├── ./crates/codeilus-export/src/types.rs
+├── ./crates/codeilus-export/tests/export.rs
+├── ./crates/codeilus-graph/src/builder.rs
+├── ./crates/codeilus-graph/src/call_graph.rs
+├── ./crates/codeilus-graph/src/community.rs
+├── ./crates/codeilus-graph/src/dep_graph.rs
+├── ./crates/codeilus-graph/src/entry_points.rs
+├── ./crates/codeilus-graph/src/heritage.rs
+├── ./crates/codeilus-graph/src/lib.rs
+├── ./crates/codeilus-graph/src/process.rs
+├── ./crates/codeilus-graph/src/types.rs
+├── ./crates/codeilus-graph/tests/graph_tests.rs
+├── ./crates/codeilus-graph/tests/property_tests.rs
+├── ./crates/codeilus-harvest/src/cloner.rs
+├── ./crates/codeilus-harvest/src/fingerprint.rs
+├── ./crates/codeilus-harvest/src/lib.rs
+├── ./crates/codeilus-harvest/src/scraper.rs
+├── ./crates/codeilus-harvest/src/types.rs
+├── ./crates/codeilus-harvest/tests/harvest_tests.rs
+├── ./crates/codeilus-learn/src/curriculum.rs
+├── ./crates/codeilus-learn/src/lib.rs
+├── ./crates/codeilus-learn/src/progress.rs
+├── ./crates/codeilus-learn/src/quiz.rs
+├── ./crates/codeilus-learn/src/types.rs
+├── ./crates/codeilus-learn/tests/learn.rs
+├── ./crates/codeilus-llm/src/cli.rs
+├── ./crates/codeilus-llm/src/context.rs
+├── ./crates/codeilus-llm/src/lib.rs
+├── ./crates/codeilus-llm/src/provider.rs
+├── ./crates/codeilus-llm/src/stream_parser.rs
+├── ./crates/codeilus-llm/src/types.rs
+├── ./crates/codeilus-mcp/src/lib.rs
+├── ./crates/codeilus-mcp/src/server.rs
+├── ./crates/codeilus-mcp/src/tools.rs
+├── ./crates/codeilus-mcp/src/types.rs
+├── ./crates/codeilus-metrics/src/complexity.rs
+├── ./crates/codeilus-metrics/src/fan.rs
+├── ./crates/codeilus-metrics/src/git.rs
+├── ./crates/codeilus-metrics/src/heatmap.rs
+├── ./crates/codeilus-metrics/src/lib.rs
+├── ./crates/codeilus-metrics/src/modularity.rs
+├── ./crates/codeilus-metrics/src/sloc.rs
+├── ./crates/codeilus-metrics/src/tfidf.rs
+├── ./crates/codeilus-metrics/src/types.rs
+├── ./crates/codeilus-metrics/tests/metrics_tests.rs
+├── ./crates/codeilus-narrate/src/generator.rs
+├── ./crates/codeilus-narrate/src/lib.rs
+├── ./crates/codeilus-narrate/src/placeholders.rs
+├── ./crates/codeilus-narrate/src/prompts.rs
+├── ./crates/codeilus-narrate/src/types.rs
+├── ./crates/codeilus-narrate/tests/narrate.rs
+├── ./crates/codeilus-parse/src/extractor.rs
+├── ./crates/codeilus-parse/src/language.rs
+├── ./crates/codeilus-parse/src/lib.rs
+├── ./crates/codeilus-parse/src/model.rs
+├── ./crates/codeilus-parse/src/parser/golang.rs
+├── ./crates/codeilus-parse/src/parser/javalang.rs
+├── ./crates/codeilus-parse/src/parser/javascript.rs
+├── ./crates/codeilus-parse/src/parser/mod.rs
+├── ./crates/codeilus-parse/src/parser/python.rs
+├── ./crates/codeilus-parse/src/parser/rustlang.rs
+├── ./crates/codeilus-parse/src/parser/typescript.rs
+├── ./crates/codeilus-parse/src/queries/go.rs
+├── ./crates/codeilus-parse/src/queries/java.rs
+├── ./crates/codeilus-parse/src/queries/javascript.rs
+├── ./crates/codeilus-parse/src/queries/mod.rs
+├── ./crates/codeilus-parse/src/queries/python.rs
+├── ./crates/codeilus-parse/src/queries/rust_lang.rs
+├── ./crates/codeilus-parse/src/queries/typescript.rs
+├── ./crates/codeilus-parse/src/resolver.rs
+├── ./crates/codeilus-parse/src/walker.rs
+├── ./crates/codeilus-parse/tests/basic_parsing.rs
+├── ./crates/codeilus-parse/tests/fixtures/sample.py
+├── ./crates/codeilus-parse/tests/fixtures/sample.rs
+├── ./crates/codeilus-parse/tests/fixtures/sample.ts
+├── ./crates/codeilus-search/src/lib.rs
+├── ./crates/codeilus-search/tests/search_tests.rs
+├── ./frontend/e2e/full-audit.spec.ts
+├── ./frontend/playwright.config.ts
+├── ./frontend/src/app.d.ts
+├── ./frontend/src/lib/api.ts
+├── ./frontend/src/lib/components/index.ts
+├── ./frontend/src/lib/stores/events.svelte.ts
+├── ./frontend/src/lib/types.ts
+├── ./frontend/src/routes/+layout.ts
+├── ./frontend/svelte.config.js
+├── ./frontend/vite.config.ts
+└── ./xtask/src/main.rs</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-20 11:58 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"dora","repo_description":null,"language_badges":[{"language":"rust","percentage":92.35668789808918,"color":"#dea584"},{"language":"typescript","percentage":6.369426751592357,"color":"#3178c6"},{"language":"python","percentage":0.6369426751592357,"color":"#3572A5"},{"language":"javascript","percentage":0.6369426751592357,"color":"#f1e05a"}],"overview":"\n\n**Codeilus** is a Rust-powered tool that takes any codebase and turns it into a **gamified, interactive learning experience** you can explore in your browser. Think of it like Duolingo, but instead of learning Spanish, you're learning how a software project works — its architecture, key symbols, how modules connect, and why things are built the way they are. It parses source code, builds a knowledge graph of symbols and relationships, generates narratives and quizzes, and serves it all through a web UI with progress tracking and badges.\n\nIt's built for **newcomers joining a team**, open-source contributors trying to understand an unfamiliar repo, or anyone who's ever stared at a large codebase thinking \"where do I even start?\" Rather than reading docs (if they exist) or grep-ing aimlessly, Codeilus creates a structured curriculum — chapters ordered by difficulty, community-detected module clusters, and LLM-generated explanations — so you can learn a codebase the way you'd learn a subject in school.\n\nUnder the hood, it's a **modular Rust workspace of ~16 crates**: `codeilus-parse` extracts symbols and imports from source files, `codeilus-graph` builds the dependency/call graph, `codeilus-analyze` detects communities and entry points (like the 23 communities and 1,048 symbols you see above), `codeilus-narrate` and `codeilus-llm` generate human-readable explanations, `codeilus-learn` handles the gamification layer (quizzes, badges, progress), and `codeilus-api` serves it all via an Axum web server. Everything flows through an event bus and SQLite database, keeping the architecture clean and each piece independently testable. It's currently past Sprint 0 (compiles, tests pass, zero warnings) and heading into the feature waves that bring each crate to life.","architecture_mermaid":"","reading_order":[{"path":"`NORTH_STAR.md`","reason":"*The Rosetta Stone*","language":""},{"path":"Without it, you'll see 16 crates and have no idea how they connect. It maps directly to the **23 communities** in the graph","reason":"each community roughly corresponds to a pipeline stage. **Read this before touching any code.**","language":""},{"path":"`crates/codeilus-core/src/lib.rs` (+ `types.rs`, `ids.rs`, `events.rs`)","reason":"*The Shared Contract*","language":""},{"path":"It defines the vocabulary: `FileId`, `SymbolId`, `Language` (13 variants), `SymbolKind` (10 variants), `EdgeKind`, and the 18-variant `CodeilusEvent` enum that flows through the entire pipeline. The community analysis confirms this","reason":"`resolve_fingerprint` (community 9) contains `CodeilusError`, `PipelineRepo`, and `Migrator`, all rooted in core types. **Zero internal dependencies = the codebase's gravity center.**","language":""},{"path":"`crates/codeilus-app/src/main.rs`","reason":"*The Orchestrator*","language":""},{"path":"50) and the only file that calls into all other crates. It implements the `run_analyze()` function","reason":"the 8-step pipeline that parses a repo, builds the knowledge graph, computes metrics, and generates narratives. Understanding this one function shows you the data flow between all 16 crates. The `resolve_tree` community (121 members, the second largest) is largely organized around this orchestration path.","language":""},{"path":"`crates/codeilus-db/src/lib.rs` (+ `repos/` directory)","reason":"*The Persistence Hub*","language":""},{"path":"`crates/codeilus-api/src/lib.rs` (+ route modules)","reason":"*The User-Facing Surface*","language":""},{"path":"20, appearing 5× in the entry point list) live. The `response_routes_types` community (16 members, 0.18 cohesion) is tight and self-contained","reason":"it defines every API response type and route. Reading the route definitions tells you *what questions the frontend can ask*, which in turn reveals what each backend crate must provide. It's the \"demand side\" that makes the \"supply side\" (parse, graph, metrics) make sense.","language":""}],"entry_points":[],"architecture_narrative":"## Codeilus Architecture: A Guided Tour\n\n**The Front Door and the Post Office.** Every request into Codeilus enters through one of two `main` entry points — the CLI binary and the web server. Think of the **router/API layer** (community `router_list`, `response_routes_types`) as the post office: it receives incoming HTTP requests, figures out which department should handle them, and routes them accordingly. The `router()` functions (there are several, one per domain) assemble Axum route trees for files, symbols, communities, chapters, and more. Types like `HealthResponse`, `ChapterResponse`, and `SearchResult` define the envelopes those responses travel in. The `AppCache` acts as a shared mailroom, holding pre-computed data so the post office doesn't have to re-fetch everything on every request.\n\n**Parsing and Understanding the Code.** When Codeilus ingests a repository, the **parse pipeline** (communities `parse_extracts`, `fetch_parse`, `resolve_tree`) does the heavy lifting. Think of it as the intake department at a hospital — it triages every source file, extracts symbols (819 functions, 165 structs, 24 interfaces, etc.), resolves imports, and classifies each symbol's role. The `resolve_tree` community is the largest working group here (121 members), handling everything from `parse_repository_with_tempdir` to `classify_symbol` and `score_entry_points`. It builds the foundational data — parsed files, symbol metadata, dependency edges — that every downstream module relies on. The `file_reader_interfaces` and `read` micro-communities are its humble helpers, abstracting raw file I/O behind a clean `Reader`/`FileReader` trait.\n\n**Storage, Search, and the Data Backbone.** Once code is parsed, the **repository/database layer** (communities `list_insert`, `list_empty`, `insert_file`, `insert_snippet`, `resolve_fingerprint`) persists everything into SQLite through structured repos — `FileRepo`, `SymbolRepo`, `PipelineRepo`, and friends. Think of this layer as the filing cabinet system: `insert_file` handles storing and retrieving files, `insert_snippet` manages code excerpts with context windows, and `list_insert` powers queries like \"list hotspots\" or \"search unified.\" The `resolve_fingerprint` community adds cross-cutting concerns — error types (`CodeilusError`), security patterns, migration management, and configuration defaults. Together, these modules ensure that every piece of extracted knowledge is stored once and queryable from anywhere, honoring the architecture rule that all DB operations flow through repository structs.\n\n**Intelligence: Graphs, Metrics, Diagrams, and Narratives.** The analytical brain of Codeilus lives in several specialized communities. The **graph and metrics** modules (`generate_mermaid`, `escape_flowchart`, `batched_placeholder`) transform raw symbol relationships into visual diagrams — Mermaid flowcharts, architecture graphs, community visualizations — with careful label escaping and node-limit controls. The **LLM and narrative** layer (`prompt_accumulator`, `row_curriculum`, `chapter_record`) is like the storytelling department: it takes the structured analysis and, using prompt templates and an `AnthropicApiStub`/`NoOpProvider` abstraction, generates human-readable chapters, quizzes, and heritage questions. The `EventBus` in `row_curriculum` acts as the internal PA system — broadcasting progress updates so that the UI, the narrator, and the learning engine all stay in sync without directly coupling to each other.\n\n**The Learning Experience.** At the outermost ring, the **curriculum and gamification** modules (`curriculum_chapter`, `chapter_record`, `index`) assemble everything into an interactive learning journey. `curriculum_chapter` estimates difficulty, orders content for reading, and checks badge criteria. `chapter_record` tracks learner progress — quizzes passed, sections completed, exploration recorded — and awards badges like \"Chapter Champion.\" The tiny `index` community generates the landing page that lists available repositories. Data flows in one direction: raw code → parsed symbols → stored relationships → computed metrics/graphs → LLM-generated narratives → curriculum chapters → learner progress. This clean pipeline, glued together by the `EventBus` and shared `core` types, is what lets Codeilus turn any codebase into a gamified course with a single command.","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `new` (Function) — used by 602 other symbols\n- `get` (Function) — used by 441 other symbols\n- `clone` (Function) — used by 311 other symbols\n- `insert` (Function) — used by 171 other symbols\n- `connection` (Function) — used by 140 other symbols\n- `as_str` (Function) — used by 62 other symbols\n- `id_display` (Function) — used by 40 other symbols\n- `CodeilusError` (Enum) — used by 35 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 213 symbols, cohesion 0%\n- **Row Curriculum** — 54 symbols, cohesion 2%\n- **List Empty** — 85 symbols, cohesion 3%\n- **List Insert** — 66 symbols, cohesion 4%\n- **Insert Snippet** — 46 symbols, cohesion 4%","why_trending":"Here's why developers are buzzing about **Codeilus**:\n\n**Codeilus is attacking one of the most underserved pain points in modern software engineering: the comprehension gap.** AI tools have supercharged how fast we *write* code, but understanding unfamiliar codebases is still a brutal slog of grepping, guessing, and asking whoever's been around longest. Codeilus flips the script entirely — you point a single Rust binary at any repo, and it extracts the full structural fingerprint (symbols, relationships, dependency communities, metrics), then transforms it into a gamified, browser-based learning experience with chapters, quizzes, architecture diagrams, and LLM-narrated explanations. The numbers from this analysis alone tell the story: **1,048 symbols, 3,718 relationships, and 23 automatically detected communities** — that's not a toy demo, that's a real codebase being decomposed into navigable, teachable units with cohesion scores and ranked entry points.\n\nWhat's *really* turning heads, though, is the ambition of the two-mode design and the engineering rigor behind it. Locally, you get a full SvelteKit 5 interactive explorer with streaming Q&A powered by Claude, impact analysis (\"what breaks if I touch this function?\"), and complexity heatmaps. But the killer feature might be **static grasp pages** — self-contained HTML files under 500KB that give you a \"5-minute understanding\" of any trending GitHub repo, deployable to a CDN via cron. The whole thing is built as 16 purpose-separated Rust crates with strict dependency rules (`codeilus-core` is the shared contract, zero cross-dependencies between siblings), event-driven architecture via `tokio` broadcast channels, and zero-tolerance for clippy warnings. It's the kind of project that makes you think, \"Why didn't this exist already?\" — and the fact that it's a single binary with no runtime dependencies beyond Claude Code makes the adoption story incredibly clean.","metrics_snapshot":{"total_files":157,"total_sloc":22180,"total_symbols":1048,"avg_complexity":3.867466584704894,"modularity_q":0.0,"hotspot_files":[{"path":"./crates/codeilus-app/src/main.rs","heatmap_score":0.0,"complexity":22.666666666666668,"churn":0},{"path":"./crates/codeilus-metrics/src/lib.rs","heatmap_score":0.0,"complexity":21.0,"churn":0},{"path":"./crates/codeilus-graph/src/entry_points.rs","heatmap_score":0.0,"complexity":20.0,"churn":0},{"path":"./crates/codeilus-metrics/src/git.rs","heatmap_score":0.0,"complexity":17.0,"churn":0},{"path":"./crates/codeilus-metrics/src/modularity.rs","heatmap_score":0.0,"complexity":16.0,"churn":0},{"path":"./crates/codeilus-graph/src/community.rs","heatmap_score":0.0,"complexity":12.75,"churn":0},{"path":"./crates/codeilus-metrics/src/tfidf.rs","heatmap_score":0.0,"complexity":11.5,"churn":0},{"path":"./crates/codeilus-export/src/data_loader.rs","heatmap_score":0.0,"complexity":11.333333333333334,"churn":0},{"path":"./crates/codeilus-db/src/lib.rs","heatmap_score":0.0,"complexity":10.0,"churn":0},{"path":"./crates/codeilus-graph/src/builder.rs","heatmap_score":0.0,"complexity":9.75,"churn":0}]},"file_tree":"├── ./crates/codeilus-analyze/src/circular_deps.rs\n├── ./crates/codeilus-analyze/src/god_class.rs\n├── ./crates/codeilus-analyze/src/lib.rs\n├── ./crates/codeilus-analyze/src/long_method.rs\n├── ./crates/codeilus-analyze/src/security.rs\n├── ./crates/codeilus-analyze/src/test_gap.rs\n├── ./crates/codeilus-analyze/src/types.rs\n├── ./crates/codeilus-analyze/tests/detectors.rs\n├── ./crates/codeilus-api/src/error.rs\n├── ./crates/codeilus-api/src/lib.rs\n├── ./crates/codeilus-api/src/routes/annotations.rs\n├── ./crates/codeilus-api/src/routes/ask.rs\n├── ./crates/codeilus-api/src/routes/chapters.rs\n├── ./crates/codeilus-api/src/routes/files.rs\n├── ./crates/codeilus-api/src/routes/graph.rs\n├── ./crates/codeilus-api/src/routes/health.rs\n├── ./crates/codeilus-api/src/routes/learning.rs\n├── ./crates/codeilus-api/src/routes/mod.rs\n├── ./crates/codeilus-api/src/routes/narratives.rs\n├── ./crates/codeilus-api/src/routes/search.rs\n├── ./crates/codeilus-api/src/routes/symbols.rs\n├── ./crates/codeilus-api/src/routes/ws.rs\n├── ./crates/codeilus-api/src/state.rs\n├── ./crates/codeilus-api/tests/api_routes.rs\n├── ./crates/codeilus-app/src/main.rs\n├── ./crates/codeilus-app/tests/integration_test.rs\n├── ./crates/codeilus-core/src/config.rs\n├── ./crates/codeilus-core/src/error.rs\n├── ./crates/codeilus-core/src/event_bus.rs\n├── ./crates/codeilus-core/src/events.rs\n├── ./crates/codeilus-core/src/ids.rs\n├── ./crates/codeilus-core/src/lib.rs\n├── ./crates/codeilus-core/src/types.rs\n├── ./crates/codeilus-db/src/batch_writer.rs\n├── ./crates/codeilus-db/src/lib.rs\n├── ./crates/codeilus-db/src/migrations.rs\n├── ./crates/codeilus-db/src/pool.rs\n├── ./crates/codeilus-db/src/repos/annotation_repo.rs\n├── ./crates/codeilus-db/src/repos/chapter_repo.rs\n├── ./crates/codeilus-db/src/repos/community_repo.rs\n├── ./crates/codeilus-db/src/repos/edge_repo.rs\n├── ./crates/codeilus-db/src/repos/edges.rs\n├── ./crates/codeilus-db/src/repos/file_metrics_repo.rs\n├── ./crates/codeilus-db/src/repos/file_repo.rs\n├── ./crates/codeilus-db/src/repos/files.rs\n├── ./crates/codeilus-db/src/repos/harvest_repo.rs\n├── ./crates/codeilus-db/src/repos/mod.rs\n├── ./crates/codeilus-db/src/repos/narrative_repo.rs\n├── ./crates/codeilus-db/src/repos/pattern_repo.rs\n├── ./crates/codeilus-db/src/repos/pipeline_repo.rs\n├── ./crates/codeilus-db/src/repos/process_repo.rs\n├── ./crates/codeilus-db/src/repos/progress_repo.rs\n├── ./crates/codeilus-db/src/repos/quiz_repo.rs\n├── ./crates/codeilus-db/src/repos/symbol_repo.rs\n├── ./crates/codeilus-db/src/repos/symbols.rs\n├── ./crates/codeilus-db/tests/clear_analysis.rs\n├── ./crates/codeilus-db/tests/persist_parsed.rs\n├── ./crates/codeilus-db/tests/repos.rs\n├── ./crates/codeilus-diagram/src/architecture.rs\n├── ./crates/codeilus-diagram/src/file_tree.rs\n├── ./crates/codeilus-diagram/src/flowchart.rs\n├── ./crates/codeilus-diagram/src/lib.rs\n├── ./crates/codeilus-diagram/src/mermaid.rs\n├── ./crates/codeilus-diagram/src/types.rs\n├── ./crates/codeilus-export/src/data_loader.rs\n├── ./crates/codeilus-export/src/index.rs\n├── ./crates/codeilus-export/src/lib.rs\n├── ./crates/codeilus-export/src/renderer.rs\n├── ./crates/codeilus-export/src/template.rs\n├── ./crates/codeilus-export/src/types.rs\n├── ./crates/codeilus-export/tests/export.rs\n├── ./crates/codeilus-graph/src/builder.rs\n├── ./crates/codeilus-graph/src/call_graph.rs\n├── ./crates/codeilus-graph/src/community.rs\n├── ./crates/codeilus-graph/src/dep_graph.rs\n├── ./crates/codeilus-graph/src/entry_points.rs\n├── ./crates/codeilus-graph/src/heritage.rs\n├── ./crates/codeilus-graph/src/lib.rs\n├── ./crates/codeilus-graph/src/process.rs\n├── ./crates/codeilus-graph/src/types.rs\n├── ./crates/codeilus-graph/tests/graph_tests.rs\n├── ./crates/codeilus-graph/tests/property_tests.rs\n├── ./crates/codeilus-harvest/src/cloner.rs\n├── ./crates/codeilus-harvest/src/fingerprint.rs\n├── ./crates/codeilus-harvest/src/lib.rs\n├── ./crates/codeilus-harvest/src/scraper.rs\n├── ./crates/codeilus-harvest/src/types.rs\n├── ./crates/codeilus-harvest/tests/harvest_tests.rs\n├── ./crates/codeilus-learn/src/curriculum.rs\n├── ./crates/codeilus-learn/src/lib.rs\n├── ./crates/codeilus-learn/src/progress.rs\n├── ./crates/codeilus-learn/src/quiz.rs\n├── ./crates/codeilus-learn/src/types.rs\n├── ./crates/codeilus-learn/tests/learn.rs\n├── ./crates/codeilus-llm/src/cli.rs\n├── ./crates/codeilus-llm/src/context.rs\n├── ./crates/codeilus-llm/src/lib.rs\n├── ./crates/codeilus-llm/src/provider.rs\n├── ./crates/codeilus-llm/src/stream_parser.rs\n├── ./crates/codeilus-llm/src/types.rs\n├── ./crates/codeilus-mcp/src/lib.rs\n├── ./crates/codeilus-mcp/src/server.rs\n├── ./crates/codeilus-mcp/src/tools.rs\n├── ./crates/codeilus-mcp/src/types.rs\n├── ./crates/codeilus-metrics/src/complexity.rs\n├── ./crates/codeilus-metrics/src/fan.rs\n├── ./crates/codeilus-metrics/src/git.rs\n├── ./crates/codeilus-metrics/src/heatmap.rs\n├── ./crates/codeilus-metrics/src/lib.rs\n├── ./crates/codeilus-metrics/src/modularity.rs\n├── ./crates/codeilus-metrics/src/sloc.rs\n├── ./crates/codeilus-metrics/src/tfidf.rs\n├── ./crates/codeilus-metrics/src/types.rs\n├── ./crates/codeilus-metrics/tests/metrics_tests.rs\n├── ./crates/codeilus-narrate/src/generator.rs\n├── ./crates/codeilus-narrate/src/lib.rs\n├── ./crates/codeilus-narrate/src/placeholders.rs\n├── ./crates/codeilus-narrate/src/prompts.rs\n├── ./crates/codeilus-narrate/src/types.rs\n├── ./crates/codeilus-narrate/tests/narrate.rs\n├── ./crates/codeilus-parse/src/extractor.rs\n├── ./crates/codeilus-parse/src/language.rs\n├── ./crates/codeilus-parse/src/lib.rs\n├── ./crates/codeilus-parse/src/model.rs\n├── ./crates/codeilus-parse/src/parser/golang.rs\n├── ./crates/codeilus-parse/src/parser/javalang.rs\n├── ./crates/codeilus-parse/src/parser/javascript.rs\n├── ./crates/codeilus-parse/src/parser/mod.rs\n├── ./crates/codeilus-parse/src/parser/python.rs\n├── ./crates/codeilus-parse/src/parser/rustlang.rs\n├── ./crates/codeilus-parse/src/parser/typescript.rs\n├── ./crates/codeilus-parse/src/queries/go.rs\n├── ./crates/codeilus-parse/src/queries/java.rs\n├── ./crates/codeilus-parse/src/queries/javascript.rs\n├── ./crates/codeilus-parse/src/queries/mod.rs\n├── ./crates/codeilus-parse/src/queries/python.rs\n├── ./crates/codeilus-parse/src/queries/rust_lang.rs\n├── ./crates/codeilus-parse/src/queries/typescript.rs\n├── ./crates/codeilus-parse/src/resolver.rs\n├── ./crates/codeilus-parse/src/walker.rs\n├── ./crates/codeilus-parse/tests/basic_parsing.rs\n├── ./crates/codeilus-parse/tests/fixtures/sample.py\n├── ./crates/codeilus-parse/tests/fixtures/sample.rs\n├── ./crates/codeilus-parse/tests/fixtures/sample.ts\n├── ./crates/codeilus-search/src/lib.rs\n├── ./crates/codeilus-search/tests/search_tests.rs\n├── ./frontend/e2e/full-audit.spec.ts\n├── ./frontend/playwright.config.ts\n├── ./frontend/src/app.d.ts\n├── ./frontend/src/lib/api.ts\n├── ./frontend/src/lib/components/index.ts\n├── ./frontend/src/lib/stores/events.svelte.ts\n├── ./frontend/src/lib/types.ts\n├── ./frontend/src/routes/+layout.ts\n├── ./frontend/svelte.config.js\n├── ./frontend/vite.config.ts\n└── ./xtask/src/main.rs","communities":[{"label":"misc","summary":"(\"misc\")\n\nThink of this community as the **shared toolbox** that every worker on a construction site reaches into. It contains the core data types, configuration structs, and interfaces that the rest of Codeilus relies on—things like `FileRepo`, `ChapterRepo`, `LlmConfig`, `Badge`, `GraphNode`, `Import`, and event enums (`LlmEvent`, `FlowNodeKind`). Because these types define the \"contracts\" between crates (what a graph edge looks like, what a learner's stats contain, what an LLM request/response carries), almost every other module depends on them, yet this community doesn't depend heavily on anything else. Its cohesion score is 0.00 precisely because it's a grab-bag of foundational definitions rather than a single tightly-focused feature.\n\nIf Codeilus were a restaurant, Community 1 would be the menu, the plate shapes, and the order slips—none of them *cook* anything, but the kitchen, the waitstaff, and the cashier all need to agree on their format. Key types to know: **repository structs** (`FileRepo`, `ChapterRepo`, `HarvestRepoRepo`) for database access, **response/request DTOs** (`GraphResponse`, `QuizAnswerRequest`, `LearnerStatsResponse`) for the API layer, and **provider enums** (`LlmProviderKind`, `Badge`) for configuration. When you add a new feature in another crate and need a shared type, this is where it lives (via `codeilus-core`).\n\n---","member_count":213,"key_symbols":["QueryGraphInput","GetContextInput","GetImpactInput","GetDiagramInput","GetMetricsInput"]},{"label":"resolve_tree","summary":"(\"resolve_tree\")\n\nThis community is the **detective squad** of the codebase—it figures out what your code *means* and how it's structured. Its members handle parsing repositories (`parse_repository_with_tempdir`), resolving imports and crate paths (`resolve_external_crate`, `extract_imports`, `extract_heritage`), building dependency graphs, detecting communities (`detect_communities`, `compute_cohesion`), scoring entry points, and even running full-text search (`search_symbols`, `test_search_files_by_language`). It also contains the main API endpoint wiring (`serve_until_signal`, `entry_point_handler`) and export logic (`generate_index`). Essentially, it turns a raw directory of source files into a rich, queryable knowledge graph.\n\nImagine you dump a jigsaw puzzle on a table: Community 2 is the person who sorts pieces by color, finds the edge pieces first, and starts assembling the picture. It **depends outward** on Community 1's shared types (for IDs, configs, and DTOs) and on repository helpers from Communities 3–5 for actual database reads/writes. Its 298+ external edges reflect how central analysis and resolution logic is—nearly every downstream feature (metrics, narratives, diagrams) starts with data this community produces.\n\n---","member_count":121,"key_symbols":["new","query_graph","get_context","get_impact","explain_symbol"]},{"label":"list_empty","summary":"(\"list_empty\")\n\nThink of Community 3 as the **quality-assurance lab**. It is dominated by test functions and builder helpers that verify the codebase's data layer and rendering pipeline work correctly, especially around edge cases like empty databases, missing files, and boundary conditions (`list_files_empty`, `search_empty_query`, `export_data_empty_db`, `get_file_not_found`). It also houses important production logic for storing parsed data (`store_parsed`, `store_parsed_data_in_db`), building the diagram IR (`build_ir`, `mermaid_inlined`), HTML rendering (`render_html_creates_file`, `render_html_has_footer`), and narrative/chapter generation (`make_big_picture_chapter`, `label_communities_semantic`).\n\nIf Codeilus were a car factory, this community runs the crash tests and paint inspections. It leans heavily on the database setup utilities (`setup_db → in_memory`, `clear_analysis_data`) and on repository insert/list methods from other communities (471+ external edges), meaning it exercises almost every CRUD path. Key items to know: **`store_parsed`** is the bridge between the parser and the DB, **`build_ir`** converts analysis results into diagram intermediate representation, and the many `render_html_*` functions produce the final exportable HTML learning pages.\n\n---","member_count":85,"key_symbols":["query_symbols","trace_call_chain","impact_analysis","find_tests_for","flush_process"]},{"label":"router_list","summary":"(\"router_list\")\n\nThis community is the **front desk and switchboard** of Codeilus. It defines the HTTP routers and API handlers (`router`, `app`, `health_check`, `get_file`, `get_symbol`, `submit_quiz_answer`, `list_chapters`, `list_sections`) that the browser-based frontend talks to. Alongside routing, it contains the security-testing suite (`security_sql_injection`, `security_eval`, `security_hardcoded_secret`, `security_clean_file`) and several repository list/get operations (`list_by_file`, `list_by_kind`, `list_by_severity`, `list_annotations`). Helper functions like `tokenize_name`, `estimate_from_loc`, and `next_id` also live here, supporting both the API layer and the data layer.\n\nPicture a hotel lobby: Community 4 is the concierge who takes your request (\"show me chapter 3,\" \"submit my quiz answer\") and routes it to the right department. It depends on Communities 1 and 5 for shared types and lower-level DB operations (170+ external edges to `insert`, `build`, `new`, etc.), and its multiple `router` functions are composed together into the single Axum `app` that `serve_until_signal` (in Community 2) ultimately launches. If you're adding a new API endpoint, this is where it goes.\n\n---","member_count":78,"key_symbols":["fmt","default","next_id","tfidf_keywords","tfidf_camel_case_split"]},{"label":"list_insert","summary":"(\"list_insert\")\n\nCommunity 5 is the **warehouse and inventory clerk**—it handles the bulk of CRUD (Create, Read, Update, Delete) operations against the SQLite database. You'll find insert, list, get, and delete functions for nearly every domain entity: files (`file_insert_and_get`, `list_files`), symbols (`symbol_insert_and_get`, `search_symbols`), patterns (`pattern_repo_filter_by_severity`, `insert_batch`), annotations (`delete_annotation`, `toggle_flag`), narratives (`narrative_repo_insert_and_get`, `narrative_repo_get_by_kind_and_target`), chapters/sections (`insert_section`, `get_chapter_quiz`), and communities (`build_community`). It also owns import-resolution helpers (`resolve_python_import`) and graph-building utilities (`build_heritage_edges`, `architecture_inter_community_edges`).\n\nThink of it as the stockroom behind a store: every shelf is labeled, and this community knows how to put items on shelves, find them again, count them, and clear them out. It connects to Community 1 for type definitions (IDs, enums, structs) and is called extensively by Communities 2–4 whenever they need to persist or retrieve data (214+ external edges). If you're writing a new repository method—`list_by_*`, `insert_*`, `delete_*`—it most likely belongs here alongside `connection()` and `setup` helpers.","member_count":66,"key_symbols":["new","sink","publish_and_receive","architecture_inter_community_edges","complexity_fallback"]},{"label":"generate_mermaid","summary":"(\"generate_mermaid\")\n\nThink of this community as the **\"artist's studio\"** of Codeilus — it's responsible for turning raw code structure into visual diagrams you can actually see and understand. Its star players are `FlowchartIR` (an intermediate blueprint for diagrams), `ir_to_mermaid` and `validate_mermaid` (which convert that blueprint into Mermaid diagram syntax and make sure it's well-formed), and helpers like `generate_architecture`, `generate_file_tree`, and `generate_flowchart` that produce different visual perspectives of a codebase. The `TreeNode` enum models hierarchical file/folder structures, while `ProgressTracker` keeps tabs on long-running generation jobs. Utility functions like `check_balanced` guard against malformed output (e.g., unbalanced brackets in Mermaid markup).\n\nThis community is a major **consumer** of data from nearly every other part of the system — it pulls file lists, symbols, communities, metrics, narratives, and graph data to compose its visuals. It connects outward to the DB layer (via `seed_db`, `insert`, `update`), the export system (`language_badges`, `communities_with_summaries`), and the curriculum generator. Think of it as the module that reads the whole \"book\" that other modules wrote and draws the pictures for it. If you're looking at any diagram or visual export in Codeilus, it almost certainly flows through Community 6.\n\n---","member_count":63,"key_symbols":["certain","medium","generate","ir_to_mermaid","flowchart_for_loop"]},{"label":"row_curriculum","summary":"(\"row_curriculum\")\n\nThis community is the **\"textbook editor\"** — it defines the database row types that store nearly every kind of analysis result, and it builds the learning curriculum that turns a codebase into a structured course. The `*Row` structs (`SymbolRow`, `ChapterRow`, `QuizQuestionRow`, `EdgeRow`, `CommunityRow`, `FileMetricsRow`, `NarrativeRow`, `PatternRow`, etc.) are like standardized forms that every other module fills out when saving data to SQLite. On the curriculum side, functions like `generate_curriculum`, `curriculum_topological_order`, and `curriculum_prerequisites` arrange chapters so learners encounter foundational concepts before advanced ones — like making sure you learn \"variables\" before \"closures.\"\n\nThe quiz and event subsystems also live here: `generate_quiz`, `generate_heritage_questions`, and `generate_call_questions` create interactive questions, while `EventBus` and `CodeilusEvent` form the nervous system that lets modules notify each other when something happens (e.g., \"parsing is done!\"). `HarvestConfig` and `HarvestRepoRow` support ingesting external repos, and `Confidence`/`Severity` tag analysis findings with reliability levels. This community glues the storage schema to the learning experience — almost every other community depends on these row types to persist its work.\n\n---","member_count":54,"key_symbols":["CodeilusTools","Confidence","high","CodeilusEvent","EventBus"]},{"label":"insert_snippet","summary":"(\"insert_snippet\")\n\nPicture this community as the **\"warehouse loading dock\"** — it handles bulk data insertion, snippet extraction, and real-time event plumbing. The many `insert` and `insert_batch` functions are the workhorses that write files, symbols, edges, patterns, and harvest data into the database, while `delete_all` and `reset_progress` clear things out for fresh runs. The `extract_snippet` function (along with its thorough test suite: `test_extract_snippet_match_found`, `_no_match`, `_short_text`, `_at_start`, `_context_window`) pulls relevant code excerpts to display alongside explanations — like highlighting a quote in a textbook.\n\nOn the real-time side, `EventBus` integration (`subscribe`, `publish`, `sink_publishes`, `ws_handler`) lets the frontend receive live progress updates over WebSockets — imagine a delivery tracker that shows parcels arriving in real time. `search_narratives` and `rebuild_index` support full-text search across generated explanations. This module is the plumbing that every write-heavy operation flows through; it connects to the DB pool, the event system, and the metrics layer, ensuring data gets stored reliably and the UI stays informed.\n\n---","member_count":46,"key_symbols":["get_metrics","subscribe","publish","no_subscribers_ok","sink_publishes"]},{"label":"resolve_fingerprint","summary":"(\"resolve_fingerprint\")\n\nThink of this community as the **\"detective bureau\"** — it identifies, fingerprints, and resolves code entities so the rest of the system can reliably track them. `compute_fingerprint` and `compute_fingerprint_from_hash` assign unique signatures to repo snapshots (like a DNA test for a commit), while `resolve_import`, `resolve_ts_import`, `resolve_rust_import`, and `resolve_generic_import` figure out where an `import` statement actually points — translating a vague address into a concrete file. The code-smell detectors (`god_class_detected`, `long_method_50/100/250_lines`, `SecurityPattern`) act like health inspectors flagging problem areas.\n\nKey infrastructure types also live here: `DbPool` (the database connection pool), `Migrator` (schema migrations), `BatchWriter` (efficient bulk writes), `CodeilusError` (the unified error enum), `NewFile`/`NewSymbol` (structs for creating new records), and `Cli` (the command-line interface entry point). This makes Community 9 a foundational layer — it provides the core plumbing and identity resolution that crates like `codeilus-parse`, `codeilus-graph`, and `codeilus-analyze` all depend on to do their work.\n\n---","member_count":44,"key_symbols":["QuerySymbolsInput","CodeilusError","id_display","estimate_complexity","build_dep_edges"]},{"label":"batched_placeholder","summary":"(\"batched_placeholder\")\n\nImagine this community as the **\"ghostwriter's desk\"** — it manages LLM-powered narrative generation and gracefully falls back to placeholder text when no AI model is available. `NarrativeGenerator` and `generate_one` drive the creation of human-readable explanations for code modules, while `PromptTemplate` and `get_prompt` assemble the prompts sent to an LLM. The `split_batched_response` family of functions parses a single large LLM response back into individual module summaries — like slicing one long letter into separate chapters. When the LLM is unavailable, `placeholder_for`, `placeholder_overview`, `why_trending_placeholder`, and `contribution_guide_placeholder` fill in sensible stand-in text so the pipeline never stalls.\n\nThe community also houses core domain types that feed into narrative generation: `Language` (the programming language enum), `KnowledgeGraph`, `Community`, `GraphBuilder`, `ParseConfig`, and `Narrative`. Helper functions like `compute_heatmap`, `count_sloc`, `detect_processes`, and `normalize` supply the quantitative context that narratives reference. It connects outward to the graph community (for structure), the metrics layer (for stats), and the parse layer (for source data) — making it the bridge between raw analysis and the friendly, readable explanations that Codeilus presents to learners.","member_count":41,"key_symbols":["Language","make_parsed_file","MetricsReport","count_sloc","compute_heatmap"]},{"label":"curriculum_chapter","summary":"(\"curriculum_chapter\")\n\nThink of this module as the **course designer** for Codeilus's learning experience. Just like a teacher who takes a textbook and breaks it into chapters, sections, and difficulty levels, `curriculum_chapter` takes the analyzed codebase and builds a structured curriculum from it. Key functions like `make_community_chapter`, `make_section`, and `make_final_chapter` assemble the learning path, while `estimate_difficulty` and `curriculum_difficulty_from_complexity` decide how hard each piece is (like labeling a trail as \"easy\" or \"expert\"). It also handles progress tracking (`complete_section`, `get_chapter_progress`), XP rewards (`progress_xp_section_and_chapter_bonus`, `progress_quiz_xp`), and badges (`check_badges`, `badge_quiz_master`). It leans heavily on Community 15 (\"chapter_record\") for persistence and Community 13 for parsed data, making it the central orchestrator of the gamified learning flow.","member_count":38,"key_symbols":["as_str","community_labels_use_directory","find_common_prefix","build_overview","setup_db"]},{"label":"fetch_parse","summary":"(\"fetch_parse\")\n\nThis community is the **delivery truck and loading dock** — it's responsible for fetching data (from the backend API or external sources) and kicking off parsing. On the frontend side, you'll find a fleet of `fetch*` functions (`fetchFiles`, `fetchSymbols`, `fetchChapters`, `fetchGraph`, etc.) that act like waiters taking your order to the kitchen and bringing back results. On the backend side, functions like `parse`, `parse_file`, and `detect_language` handle the initial ingestion of source code, while `scrape_trending` pulls data from external sources. It connects outward to Community 13 (\"parse_extracts\") for the heavy-lifting extraction logic (tree-sitter queries, symbol extraction) and feeds its results into the DB and graph layers. If the codebase were a restaurant, this module seats the guests and places the orders.","member_count":37,"key_symbols":["env_parse","publish","typescript_extracts_symbols","rust_extracts_symbols","incremental_parse_skips_unchanged_files"]},{"label":"parse_extracts","summary":"(\"parse_extracts\")\n\nThis is the **microscope and dissection table** of the codebase. While Community 12 kicks off parsing, Community 13 does the actual deep extraction work — pulling symbols, imports, heritage (inheritance), and call relationships out of raw source code. Key types include `Symbol` (representing a function, class, or variable found in code), `LanguageQueries` (the tree-sitter query definitions per language), and helpers like `create_parser`, `extract`, `count_sloc`, and `from_extension`. Language-specific functions like `python_extracts_symbols`, `typescript_extracts_heritage`, and `get_ts_language` show that this module speaks multiple programming languages fluently. It also handles configuration (`from_env`, `cors_origins`) and repository walking (`walk_files`, `parse_repository`). Everything extracted here flows into `codeilus-db` for storage and into the graph/curriculum layers upstream.","member_count":34,"key_symbols":["from_extension","from_env","env_parse_bool","fixtures_dir","python_extracts_symbols"]},{"label":"prompt_accumulator","summary":"(\"prompt_accumulator\")\n\nThink of this module as the **interview coach** that talks to an LLM (like Claude) on behalf of the system. It constructs prompts (`prompt`, `build_context`, `context_overview`, `context_symbol`), sends them to an LLM provider via the `LlmProvider` trait, and accumulates the streamed response token-by-token using functions like `feed`, `finish`, and `is_message_stop`. Key types include `LlmRequest` (the envelope for a prompt), `ClaudeCli` and `AnthropicApiStub` (concrete providers), and `NoOpProvider` (a silent stand-in for testing). Helper functions like `is_garbage_response` filter out bad outputs, while `prompt_graceful_degradation` ensures the system still works if the LLM is unavailable. This module connects to `codeilus-llm` and feeds generated narratives, explanations, and quiz content into the curriculum and narration layers.","member_count":33,"key_symbols":["LlmRequest","LlmProvider","NoOpProvider","AnthropicApiStub","is_message_stop"]},{"label":"chapter_record","summary":"(\"chapter_record\")\n\nIf Community 11 is the course designer, Community 15 is the **grade book and trophy case**. It's the persistence and progress-tracking backbone that records everything a learner does: completing sections (`record_section`, `mark_section_complete`), taking quizzes (`record_quiz`, `count_quizzes_passed`), exploring code (`record_explore`), and earning badges (`insert_badge`, `list_badges`, `badge_first_steps`, `badge_chapter_champion`). Key types include `ExportData` (for packaging progress data) and the DB pool created via `in_memory` and `apply_pending` (migrations). Functions like `get_overall_progress`, `compute_level`, `get_learning_status`, and `count_completed_chapters` roll up raw records into meaningful stats. It also supports the curriculum layer through `setup_chapter_with_sections` and `make_supporting_chapter`, and connects outward to the diagram and export modules (`get_diagram`, `delete_all`, `render_with_env`). Nearly every gamification feature in Codeilus reads from or writes to this community.","member_count":30,"key_symbols":["get_diagram","get_learning_status","new","record_section","get_chapter_progress"]},{"label":"escape_flowchart","summary":"(\"escape_flowchart\")\n\nThink of this community as the **\"diagram artist's toolkit.\"** When Codeilus wants to draw a flowchart of your code (showing if/else branches, loops, and function calls), it first builds an internal sketch called a `FlowchartIR` (intermediate representation). But diagram renderers like Mermaid choke on special characters—quotes, brackets, and long labels can break the output. That's where the `escape_label`, `escape_newlines`, and `mermaid_escape_label` helpers come in: they're like a proofreader who sanitizes every label before it goes on the whiteboard. The `ir_to_mermaid()` function then translates the clean sketch into actual Mermaid syntax with proper node shapes (diamonds for decisions, rectangles for processes). Alongside these rendering helpers, the community also bundles the database batch-insert functions (`file_insert_batch`, `edge_insert_batch`, `insert_members_batch`) and lookup functions (`get_by_path`, `list_members`) that store and retrieve the graph data these diagrams are built from.\n\nThe low cohesion (0.25) reflects the fact that this community straddles two concerns—**diagram rendering** (in `codeilus-diagram`) and **database operations** (in `codeilus-db`)—that are logically related because flowchart tests need to insert test data before verifying diagram output. Key types to know: `FlowchartIR` (the intermediate flowchart model), `EdgeRepo` / `FileRepo` (database repositories), and the various `escape_*` utility functions. It connects outward to `codeilus-parse` for symbol data and feeds Mermaid strings to the frontend for display.\n\n---","member_count":20,"key_symbols":["make_symbol","flowchart_simple_function","flowchart_if_else","flowchart_nested","escape_label"]},{"label":"insert_file","summary":"(\"insert_file\")\n\nThis community is the **\"filing cabinet\"** of Codeilus—it's the collection of database repository methods that store, retrieve, and manage file and symbol records. Imagine every source file you analyze gets a card in a cabinet (`insert`, `insert_batch`), each card tagged with metadata like language and line count. Symbols (functions, structs, traits) within those files get their own sub-cards (`list_by_file`, `list_by_name`, `find_by_symbol`). You can search the cabinet by prefix (`search`), clean out an entire drawer (`delete_all`, `delete_by_file`), or count how many cards you have (`count`). The `community_repo_insert_and_list` integration test acts like a full dress rehearsal, inserting communities, adding members, and verifying everything cleans up properly.\n\nKey types: `FileRepo`, `SymbolRepo`, `CommunityRepo` (all in `codeilus-db/src/repos/`), and their row types `FileRow`, `SymbolRow`. Every repo takes a shared `DbPool` connection and follows the same pattern—construct with `new()`, then call CRUD methods. This community is foundational: the API routes (Community 18), the analysis pipeline, and the graph builder all depend on these repos to persist and query data. Tests use in-memory SQLite via `DbPool::in_memory()` for fast, isolated verification.\n\n---","member_count":19,"key_symbols":["file_get_by_path","file_get_by_path_not_found","community_repo_insert_and_list","new","insert"]},{"label":"response_routes_types","summary":"(\"response_routes_types\")\n\nThink of this community as the **\"front desk\"** of Codeilus—it defines every HTTP endpoint the browser talks to and the exact shape of every request and response. The `router()` function is the receptionist who directs incoming requests to the right handler: health checks go to `HealthResponse`, search queries use `SearchParams` → `SearchResult`, chapter lookups return `ChapterResponse`, and so on. Specialized request types like `AskRequest` (for LLM-powered Q&A with streaming) and `GraphQuery` (for fetching the code graph) ensure each endpoint knows exactly what data to expect. `AppCache` acts like a sticky-note memory at the front desk—a Moka in-memory cache with a 10-minute TTL so frequently requested chapters and narratives don't hit the database every time.\n\nKey types: `ApiError` (a unified error wrapper that converts internal `CodeilusError` into proper HTTP status codes + JSON), `FrontendAssets` (uses `rust_embed` to bake the compiled SPA directly into the binary—no separate file server needed), and the various `*Response` structs that serialize to JSON. This community lives in `codeilus-api` and depends on `codeilus-core` for shared error types and ID newtypes. It's the boundary layer between the Rust backend and the React frontend.\n\n---","member_count":16,"key_symbols":["SearchResult","ApiError","FrontendAssets","AppCache","AskRequest"]},{"label":"index","summary":"(\"index\")\n\nThis tiny community is like a **\"table of contents generator\"** for exported Codeilus sites. When you export one or more analyzed repositories as static HTML (for hosting on GitHub Pages or a shared drive), `generate_index()` creates a landing `index.html` that lists all the exported repos with their metadata—essentially a homepage. The two test functions, `index_page_lists_repos` and `index_page_size`, verify that the generated page actually contains the expected repo entries and renders at a reasonable size.\n\nIt lives in `codeilus-export/src/index.rs` and uses Minijinja for HTML templating. Its high cohesion (0.67) reflects that all three members are tightly focused on one job. It connects to the broader export pipeline: after `export_repo()` finishes writing per-repo pages, `generate_index()` ties them together into a navigable site.\n\n---","member_count":3,"key_symbols":["index_page_lists_repos","index_page_size","generate_index"]},{"label":"file_reader_interfaces","summary":"(\"file_reader_interfaces\")\n\nThis is the **\"scout\"** of the codebase—before Codeilus can analyze anything, it needs to walk through a project's directory tree and figure out which files are actually source code worth parsing. The `Reader` trait defines the contract (\"give me a list of files to read\"), and `FileReader` is the concrete implementation that walks the filesystem using the `ignore` crate (which automatically respects `.gitignore` rules). It detects each file's programming language by extension, skips files over 20 MB, and filters out hidden or irrelevant files.\n\nWith perfect cohesion (1.00) and just two members, this is the most focused community in the graph. It lives in `codeilus-parse/src/walker.rs` and is the very first step in the analysis pipeline: `parse_repository()` calls the file walker to discover files, then hands each one to tree-sitter for parsing. Every other community downstream—symbols, graphs, diagrams, narratives—depends on files this scout discovers.","member_count":2,"key_symbols":["Reader","FileReader"]},{"label":"read","summary":"(\"read\")\n\nThink of this community as a **mailroom clerk**: it receives raw input (`read`) and then sorts and handles it (`process`). The `read` function is responsible for fetching or ingesting data from a source, while `process` transforms or acts on that data once it's been read in. With a perfect cohesion score of 1.00, these two functions work hand-in-hand as a tight read-then-process pipeline. Other parts of the codebase likely call into this pair whenever they need to load and interpret a specific kind of data.","member_count":2,"key_symbols":["read","process"]},{"label":"read_2","summary":"(\"read_2\")\n\nThis community is a **second mailroom clerk** handling a different type of mail. It has the same shape as Community 21—a `read` function paired with a `process` function—but operates on a distinct data source or format. Think of it like having one clerk for letters and another for packages: same workflow, different content. The perfect cohesion (1.00) again shows these two functions are tightly coupled. If you're tracing data flow through the codebase, this module represents an alternative or parallel ingestion path alongside Community 21's reader.","member_count":2,"key_symbols":["read","process"]},{"label":"invalidate_all","summary":"(\"invalidate_all\")\n\nImagine a **reset button** on a whiteboard that erases everything so you can start fresh—that's `invalidate_all`. This single-member community exposes one function whose job is to mark all cached or stored data as stale, forcing downstream consumers to re-read or recompute their results. It acts as a system-wide cache-buster that other modules (including the read pipelines in Communities 21 and 22) depend on to know when their previously loaded data is no longer trustworthy. Despite being just one function, it plays a critical coordination role in keeping the rest of the codebase consistent after changes occur.","member_count":1,"key_symbols":["invalidate_all"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'query_graph' is 70 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_context' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_impact' is 52 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'understand_codebase' is 58 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'trace_call_chain' is 70 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'impact_analysis' is 73 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'find_related_code' is 99 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'explain_file' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'find_tests_for' is 58 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'suggest_reading_order' is 57 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_community_context' is 88 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'build_ir' is 170 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'validate' is 75 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'render_node' is 91 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'generate' is 111 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'make_simple_graph' is 62 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'modularity_q_score' is 76 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'compute_modularity' is 82 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'compute_metrics' is 216 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'compute_git_metrics' is 94 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'compute_tfidf' is 59 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'louvain_two_clusters' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'tiny_communities_merged' is 57 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'build_graph_integration' is 65 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'score_entry_points' is 85 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'resolve_rust_import' is 99 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'resolve_external_crate' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'resolve_python_import' is 69 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'build' is 123 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'label_communities_semantic' is 173 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'detect_communities' is 170 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'merge_small_communities' is 65 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'incremental_parse_skips_unchanged_files' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'extract_definitions' is 87 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'extract_imports' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'extract_heritage' is 56 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'parse_repository_incremental' is 77 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'search_symbols' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'search_narratives' is 51 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'extract_snippet' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'parse_stream_line' is 68 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'build_overview' is 93 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'build_community' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'build_symbol' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'make_test_graph' is 75 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'prompt_once' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'prompt_stream' is 90 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'graph_api_returns_nodes_with_community_ids' is 51 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'run_analyze' is 453 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'main' is 156 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'persist_parsed_files' is 66 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'apply_pending' is 128 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'make_test_graph' is 126 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'generate' is 139 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'make_big_picture_chapter' is 103 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'make_community_chapter' is 144 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'make_final_chapter' is 111 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'make_supporting_chapter' is 112 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'topological_sort_communities' is 103 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'generate_quiz' is 58 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'generate_heritage_questions' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'graph_with_communities' is 77 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'overview_placeholder' is 66 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'architecture_placeholder' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'module_summary_placeholder' is 67 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'generate_all' is 51 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'generate_module_summaries_batched' is 114 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'generate_one_internal' is 80 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'seed_db' is 69 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'load_export_data' is 187 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'clone_all' is 65 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'parse_trending_html' is 74 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'ask_stream' is 135 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_community_graph' is 93 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_graph' is 96 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'list_processes' is 56 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'get_file_source' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'list_symbols' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'askQuestion' is 55 lines long","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: connection → get → connection","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: setup → clear_analysis_data → setup","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: LlmProvider → is_garbage_response → LlmProvider","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 19 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 23 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 19 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 19 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 17 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 19 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 18 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 20 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 15 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 32 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 23 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

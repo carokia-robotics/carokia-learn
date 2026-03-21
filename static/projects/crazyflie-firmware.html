@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>crazyflie-firmware — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>crazyflie-firmware</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 97.8%</span>
+        
+            <span class="badge"><span class="badge-dot" style="background:#dea584"></span> rust 2.2%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **45 files** with **285 symbols** across **5198 lines of code**, written in **python, rust**.
+
+The codebase is organized into **18 functional modules** (automatically detected communities) with **30 entry points**.
+
+### Modules at a Glance
+
+- **Connection Disconnected** — 70 symbols (cohesion: 9%)
+- **Misc** — 49 symbols (cohesion: 0%)
+- **Information Extract** — 26 symbols (cohesion: 5%)
+- **Ramp Corner** — 22 symbols (cohesion: 12%)
+- **Trajectory Collect** — 21 symbols (cohesion: 19%)
+- **Find Flying** — 18 symbols (cohesion: 7%)
+- **Append Used** — 18 symbols (cohesion: 50%)
+- **Start Tower** — 17 symbols (cohesion: 7%)
+- **Update Flighttime** — 14 symbols (cohesion: 25%)
+- **Add Node** — 13 symbols (cohesion: 0%)
+- **Canvas Anim** — 5 symbols (cohesion: 70%)
+- **Clean** — 3 symbols (cohesion: 67%)
+- **Render** — 2 symbols (cohesion: 100%)
+- **Console** — 2 symbols (cohesion: 100%)
+- **Get Export** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `cf_handler` — handler/route pattern, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`cf_handler`** (Function)</code> — handler/route pattern, zero callers, calls others *(score: 1.2)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **285 symbols** connected by **652 relationships** across **18 modules**.
+
+### Relationship Types
+
+- **640** function calls
+- **7** import dependencies
+- **5** inheritance relationships
+
+### Module Hierarchy
+
+- **Connection Disconnected** (70 symbols) — includes: `decode`, `system_id_dynamic`, `_connection_lost`
+- **Misc** (49 symbols) — includes: `_log_data`, `test_shortest_signed_angle_radians`, `test_that_traj_eval_zero_is_actually_zero`
+- **Information Extract** (26 symbols) — includes: `check_structs`, `param_type_to_str`, `extract_information_from_git`
+- **Ramp Corner** (22 symbols) — includes: `max_corner_m`, `volume_data`, `_close`
+- **Trajectory Collect** (21 symbols) — includes: `start_trajectory`, `_is_in_volume`, `_check_parameters`
+- **Find Flying** (18 symbols) — includes: `TowerBase`, `connected_count`, `prepare_copters`
+- **Append Used** (18 symbols) — includes: `extract_related_text`, `pre_process_xml`, `find`
+- **Start Tower** (17 symbols) — includes: `get_charge_level`, `send_report`, `start_copters`
+- **Update Flighttime** (14 symbols) — includes: `set_flighttime`, `update_scene`, `update_line`
+- **Add Node** (13 symbols) — includes: `add_and_process_c_file`, `_add_to_graph`, `_process_node`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `print` (Function) — used by 209 other symbols
+- `set_value` (Function) — used by 43 other symbols
+- `_applyThrust` (Function) — used by 22 other symbols
+- `line` (Function) — used by 13 other symbols
+- `poly` (Function) — used by 10 other symbols
+- `Crazyflie` (Class) — used by 7 other symbols
+- `decode` (Function) — used by 7 other symbols
+- `m_to_vs` (Function) — used by 6 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 49 symbols, cohesion 0%
+- **Add Node** — 13 symbols, cohesion 0%
+- **Information Extract** — 26 symbols, cohesion 5%
+- **Find Flying** — 18 symbols, cohesion 7%
+- **Start Tower** — 17 symbols, cohesion 7%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python, rust with 45 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">45</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">5198</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">285</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">3.2</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/param_est/CF_functions.py</code></div>
+                <div class="card-meta">complexity: 16.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/cfusdlog.py</code></div>
+                <div class="card-meta">complexity: 9.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/system_id.py</code></div>
+                <div class="card-meta">complexity: 8.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/control_tower/towergui.py</code></div>
+                <div class="card-meta">complexity: 7.6 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/make/versionTemplate.py</code></div>
+                <div class="card-meta">complexity: 7.5 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/bindings/util/estimator_kalman_emulator.py</code></div>
+                <div class="card-meta">complexity: 6.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/collect_data.py</code></div>
+                <div class="card-meta">complexity: 6.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/utils.py</code></div>
+                <div class="card-meta">complexity: 6.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/loadcell.py</code></div>
+                <div class="card-meta">complexity: 5.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/calibscale.py</code></div>
+                <div class="card-meta">complexity: 5.1 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (18)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">connection_disconnected</div>
+                        <div class="card-meta">70 symbols</div>
+                        <p>## Module: Connection Disconnected
+
+This module contains **70 symbols** with a cohesion score of **9%** and **44 external connections**.
+
+### Types
+
+- `CalibScale`
+- `EstimatorKalmanEmulator`
+- `SdCardFileRunner`
+
+### Functions
+
+- `decode`
+- `system_id_dynamic`
+- `_connection_lost`
+- `_disconnected`
+- `dump_state`
+- `_set_disconnected`
+- `cf_handler`
+- `residuals_full`
+- `measure`
+- `check_output`
+- ...and 57 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: read_u8, read_u16, process_file, get_offset_of, get_offset_of_symbol</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">49 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **49 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `Colors`
+- `BuildCommand`
+
+### Functions
+
+- `_log_data`
+- `test_shortest_signed_angle_radians`
+- `test_that_traj_eval_zero_is_actually_zero`
+- `test_controller_brescianini`
+- `test_power_distribution_cap_reduces_thrust_equally_much_with_lower_cap`
+- `_ramp_motors`
+- `test_that_vec_is_converted_to_numpy_array`
+- `test_power_distribution_force_torque`
+- `test_controller_pid`
+- `__init__`
+- ...and 37 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Colors, __init__, __init__, get_file_count, get_c_file_count</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">information_extract</div>
+                        <div class="card-meta">26 symbols</div>
+                        <p>## Module: Information Extract
+
+This module contains **26 symbols** with a cohesion score of **5%** and **85 external connections**.
+
+### Types
+
+- `EOFException`
+- `AppchannelTest`
+
+### Functions
+
+- `check_structs`
+- `param_type_to_str`
+- `extract_information_from_git`
+- `read_data`
+- `terminate`
+- `print_tree`
+- `process`
+- `loadFiles`
+- `inversepoly`
+- `convert_parameters`
+- ...and 14 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: EOFException, read_u32, param_type_to_str, log_type_to_str, check_structs</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">ramp_corner</div>
+                        <div class="card-meta">22 symbols</div>
+                        <p>## Module: Ramp Corner
+
+This module contains **22 symbols** with a cohesion score of **12%** and **63 external connections**.
+
+### Types
+
+- `CollectDataStatic`
+- `Loadcell`
+- `CollectDataRamp`
+- `VoxelSpace`
+
+### Functions
+
+- `max_corner_m`
+- `volume_data`
+- `_close`
+- `get_value`
+- `m_to_vs_f`
+- `pos_m_to_scale`
+- `_ramp_motors_chirp`
+- `_fully_connected`
+- `vs_to_m`
+- `add_pos_m`
+- ...and 8 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Loadcell, _close, CollectDataRamp, CollectDataStatic, _measure</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">trajectory_collect</div>
+                        <div class="card-meta">21 symbols</div>
+                        <p>## Module: Trajectory Collect
+
+This module contains **21 symbols** with a cohesion score of **19%** and **35 external connections**.
+
+### Types
+
+- `CollectData`
+- `CollectDataDynamic`
+- `Visulizer`
+
+### Functions
+
+- `start_trajectory`
+- `_is_in_volume`
+- `_check_parameters`
+- `base_station_r`
+- `_all_updated`
+- `get_ratio`
+- `set_trajectory_count`
+- `all_voxel_positions`
+- `_applyThrust`
+- `set_value`
+- ...and 8 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: CollectData, _write, _average_dict, CollectDataDynamic, _check_parameters</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">find_flying</div>
+                        <div class="card-meta">18 symbols</div>
+                        <p>## Module: Find Flying
+
+This module contains **18 symbols** with a cohesion score of **7%** and **27 external connections**.
+
+### Types
+
+- `TowerBase`
+
+### Functions
+
+- `connected_count`
+- `prepare_copters`
+- `find_best_controllers`
+- `has_found_position`
+- `is_connected`
+- `__init__`
+- `is_charging`
+- `_pre_state_taking_off`
+- `find_unused_slot_times`
+- `land_all`
+- ...and 7 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _pre_state_taking_off, is_connected, has_found_position, is_ready_for_flight, is_flying</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">append_used</div>
+                        <div class="card-meta">18 symbols</div>
+                        <p>## Module: Append Used
+
+This module contains **18 symbols** with a cohesion score of **50%** and **0 external connections**.
+
+### Types
+
+- `DependencyGraph`
+
+### Functions
+
+- `extract_related_text`
+- `pre_process_xml`
+- `find`
+- `get_brief_description`
+- `merge_paras`
+- `read_and_parse_xml`
+- `get_detailed_description`
+- `extract_memberdefs`
+- `process_class_file`
+- `depends_on`
+- ...and 7 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: DependencyGraph, find, depends_on, used_by, with_dependency_to</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">start_tower</div>
+                        <div class="card-meta">17 symbols</div>
+                        <p>## Module: Start Tower
+
+This module contains **17 symbols** with a cohesion score of **7%** and **28 external connections**.
+
+### Types
+
+- `Tower`
+- `TrafficController`
+- `SyncTower`
+
+### Functions
+
+- `get_charge_level`
+- `send_report`
+- `start_copters`
+- `start_line`
+- `get_start_offsets`
+- `force_land`
+- `reset_internal`
+- `is_taking_off`
+- `is_charged_for_flight`
+- `fly`
+- ...and 4 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: TrafficController, reset_internal, _pre_state_going_to_initial_position, is_taking_off, take_off</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">update_flighttime</div>
+                        <div class="card-meta">14 symbols</div>
+                        <p>## Module: Update Flighttime
+
+This module contains **14 symbols** with a cohesion score of **25%** and **8 external connections**.
+
+### Types
+
+- `Crazyflie`
+
+### Functions
+
+- `set_flighttime`
+- `update_scene`
+- `update_line`
+- `set_battery`
+- `__init__`
+- `update_marker`
+- `set_state`
+- `set_uptime`
+- `receive_thread`
+- `__init__`
+- ...and 3 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, __init__, __init__, _connect, Crazyflie</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">add_node</div>
+                        <div class="card-meta">13 symbols</div>
+                        <p>## Module: Add Node
+
+This module contains **13 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `_CmdFileReader`
+- `_DependencyNode`
+
+### Functions
+
+- `add_and_process_c_file`
+- `_add_to_graph`
+- `_process_node`
+- `_parse_includes`
+- `_process_nodes`
+- `_include_file`
+- `mark_processed`
+- `add_parent`
+- `add_child`
+- `add_and_process_dir`
+- ...and 1 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _CmdFileReader, map_to_dependency, _DependencyNode, add_child, add_parent</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">canvas_anim</div>
+                        <div class="card-meta">5 symbols</div>
+                        <p>## Module: Canvas Anim
+
+This module contains **5 symbols** with a cohesion score of **70%** and **0 external connections**.
+
+### Types
+
+- `AnimCanvas`
+
+### Functions
+
+- `generate_scene`
+- `__init__`
+- `marker`
+- `line`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: AnimCanvas, __init__, generate_scene, marker, line</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">clean</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Clean
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `_read_cmd_file`
+- `__init__`
+- `_clean_deps`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _read_cmd_file, _clean_deps, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">render</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Render
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `get_color`
+- `render`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_color, render</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">console</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Console
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `appMain`
+- `console_print`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: console_print, appMain</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">get_export</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Get Export
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `_get_category`
+- `export`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: export, _get_category</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">options_initialize</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Options Initialize
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `initialize_options`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: initialize_options</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">mem_write_classes</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Mem Write Classes
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `WriteMem`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: WriteMem</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_18</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 18
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (32)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'check_structs' is 81 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'decode' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'measure' is 58 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'system_id_static' is 309 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'system_id_verification' is 60 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'system_id_dynamic' is 240 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_fully_connected' is 60 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_ramp_motors' is 86 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'decode' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'create_markdown' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_update_with_sample' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: process_file → log_type_to_str → process_file</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: read_data → calibrate → read_data</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: ode_dc_motor → system_id_dynamic → ode_dc_motor</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: parse → consume → parse</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: base_station_r → populate_base_stations → all_voxel_positions → base_station_r</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: decode → _get_name → decode</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 37 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 30 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 23 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 57 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/setup.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/util/estimator_kalman_emulator.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/util/loco_utils.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/util/sd_card_file_runner.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/cffirmware_setup.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/examples/app_appchannel_test/tools/appchannelTest.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/examples/app_hello_rs/src/lib.rs
+├── /Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/control_tower/control_tower.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/control_tower/towergui.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/visualization-live.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_cf_assert.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_brescianini.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_lee.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_mellinger.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_pid.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_kalman_core.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_math3d.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_planner.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_power_distribution.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_pptraj.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/dependency/deplib/graph.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/dependency/deplib/visualize.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/dependency/deps.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/gen-dox/xml_to_markdown_logparam_doc.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/lighthouse/coverage.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/lighthouse/upload_config.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/check-for-submodules.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/dfu-convert.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/size.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/usb-bootloader.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/versionTemplate.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/param_est/CF_functions.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/param_est/extract_signals.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/calibscale.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/collect_data.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/loadcell.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/plot_data_ramp_motors.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/system_id.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/utils.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/trace/decodeItm.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/cfusdlog.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/example.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/plot_events.py
+├── /Users/bm/carokia-repos/crazyflie-firmware/tools/utils/reboot.py
+└── /Users/bm/carokia-repos/crazyflie-firmware/tools/verify/elf_sanity.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 09:24 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"crazyflie-firmware","repo_description":null,"language_badges":[{"language":"python","percentage":97.77777777777777,"color":"#3572A5"},{"language":"rust","percentage":2.2222222222222223,"color":"#dea584"}],"overview":"## Project Overview\n\nThis project contains **45 files** with **285 symbols** across **5198 lines of code**, written in **python, rust**.\n\nThe codebase is organized into **18 functional modules** (automatically detected communities) with **30 entry points**.\n\n### Modules at a Glance\n\n- **Connection Disconnected** — 70 symbols (cohesion: 9%)\n- **Misc** — 49 symbols (cohesion: 0%)\n- **Information Extract** — 26 symbols (cohesion: 5%)\n- **Ramp Corner** — 22 symbols (cohesion: 12%)\n- **Trajectory Collect** — 21 symbols (cohesion: 19%)\n- **Find Flying** — 18 symbols (cohesion: 7%)\n- **Append Used** — 18 symbols (cohesion: 50%)\n- **Start Tower** — 17 symbols (cohesion: 7%)\n- **Update Flighttime** — 14 symbols (cohesion: 25%)\n- **Add Node** — 13 symbols (cohesion: 0%)\n- **Canvas Anim** — 5 symbols (cohesion: 70%)\n- **Clean** — 3 symbols (cohesion: 67%)\n- **Render** — 2 symbols (cohesion: 100%)\n- **Console** — 2 symbols (cohesion: 100%)\n- **Get Export** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `cf_handler` — handler/route pattern, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others","architecture_mermaid":"","reading_order":[{"path":"**`cf_handler`** (Function)","reason":"handler/route pattern, zero callers, calls others *(score: 1.2)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **285 symbols** connected by **652 relationships** across **18 modules**.\n\n### Relationship Types\n\n- **640** function calls\n- **7** import dependencies\n- **5** inheritance relationships\n\n### Module Hierarchy\n\n- **Connection Disconnected** (70 symbols) — includes: `decode`, `system_id_dynamic`, `_connection_lost`\n- **Misc** (49 symbols) — includes: `_log_data`, `test_shortest_signed_angle_radians`, `test_that_traj_eval_zero_is_actually_zero`\n- **Information Extract** (26 symbols) — includes: `check_structs`, `param_type_to_str`, `extract_information_from_git`\n- **Ramp Corner** (22 symbols) — includes: `max_corner_m`, `volume_data`, `_close`\n- **Trajectory Collect** (21 symbols) — includes: `start_trajectory`, `_is_in_volume`, `_check_parameters`\n- **Find Flying** (18 symbols) — includes: `TowerBase`, `connected_count`, `prepare_copters`\n- **Append Used** (18 symbols) — includes: `extract_related_text`, `pre_process_xml`, `find`\n- **Start Tower** (17 symbols) — includes: `get_charge_level`, `send_report`, `start_copters`\n- **Update Flighttime** (14 symbols) — includes: `set_flighttime`, `update_scene`, `update_line`\n- **Add Node** (13 symbols) — includes: `add_and_process_c_file`, `_add_to_graph`, `_process_node`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `print` (Function) — used by 209 other symbols\n- `set_value` (Function) — used by 43 other symbols\n- `_applyThrust` (Function) — used by 22 other symbols\n- `line` (Function) — used by 13 other symbols\n- `poly` (Function) — used by 10 other symbols\n- `Crazyflie` (Class) — used by 7 other symbols\n- `decode` (Function) — used by 7 other symbols\n- `m_to_vs` (Function) — used by 6 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 49 symbols, cohesion 0%\n- **Add Node** — 13 symbols, cohesion 0%\n- **Information Extract** — 26 symbols, cohesion 5%\n- **Find Flying** — 18 symbols, cohesion 7%\n- **Start Tower** — 17 symbols, cohesion 7%","why_trending":"## Why This Project\n\nThis project is written in python, rust with 45 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":45,"total_sloc":5198,"total_symbols":285,"avg_complexity":3.220113755174777,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/param_est/CF_functions.py","heatmap_score":0.0,"complexity":16.0,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/cfusdlog.py","heatmap_score":0.0,"complexity":9.0,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/system_id.py","heatmap_score":0.0,"complexity":8.333333333333334,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/control_tower/towergui.py","heatmap_score":0.0,"complexity":7.571428571428571,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/make/versionTemplate.py","heatmap_score":0.0,"complexity":7.5,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/bindings/util/estimator_kalman_emulator.py","heatmap_score":0.0,"complexity":6.666666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/collect_data.py","heatmap_score":0.0,"complexity":6.2,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/utils.py","heatmap_score":0.0,"complexity":6.166666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/loadcell.py","heatmap_score":0.0,"complexity":5.285714285714286,"churn":0},{"path":"/Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/calibscale.py","heatmap_score":0.0,"complexity":5.111111111111111,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/setup.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/util/estimator_kalman_emulator.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/util/loco_utils.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/bindings/util/sd_card_file_runner.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/cffirmware_setup.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/examples/app_appchannel_test/tools/appchannelTest.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/examples/app_hello_rs/src/lib.rs\n├── /Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/control_tower/control_tower.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/control_tower/towergui.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/examples/demos/swarm_demo/visualization-live.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_cf_assert.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_brescianini.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_lee.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_mellinger.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_controller_pid.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_kalman_core.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_math3d.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_planner.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_power_distribution.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/test_python/test_pptraj.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/dependency/deplib/graph.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/dependency/deplib/visualize.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/dependency/deps.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/gen-dox/xml_to_markdown_logparam_doc.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/lighthouse/coverage.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/lighthouse/upload_config.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/check-for-submodules.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/dfu-convert.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/size.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/usb-bootloader.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/make/versionTemplate.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/param_est/CF_functions.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/param_est/extract_signals.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/calibscale.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/collect_data.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/loadcell.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/plot_data_ramp_motors.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/system_id.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/system_id/utils.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/trace/decodeItm.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/cfusdlog.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/example.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/usdlog/plot_events.py\n├── /Users/bm/carokia-repos/crazyflie-firmware/tools/utils/reboot.py\n└── /Users/bm/carokia-repos/crazyflie-firmware/tools/verify/elf_sanity.py","communities":[{"label":"connection_disconnected","summary":"## Module: Connection Disconnected\n\nThis module contains **70 symbols** with a cohesion score of **9%** and **44 external connections**.\n\n### Types\n\n- `CalibScale`\n- `EstimatorKalmanEmulator`\n- `SdCardFileRunner`\n\n### Functions\n\n- `decode`\n- `system_id_dynamic`\n- `_connection_lost`\n- `_disconnected`\n- `dump_state`\n- `_set_disconnected`\n- `cf_handler`\n- `residuals_full`\n- `measure`\n- `check_output`\n- ...and 57 more","member_count":70,"key_symbols":["read_u8","read_u16","process_file","get_offset_of","get_offset_of_symbol"]},{"label":"misc","summary":"## Module: Misc\n\nThis module contains **49 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `Colors`\n- `BuildCommand`\n\n### Functions\n\n- `_log_data`\n- `test_shortest_signed_angle_radians`\n- `test_that_traj_eval_zero_is_actually_zero`\n- `test_controller_brescianini`\n- `test_power_distribution_cap_reduces_thrust_equally_much_with_lower_cap`\n- `_ramp_motors`\n- `test_that_vec_is_converted_to_numpy_array`\n- `test_power_distribution_force_torque`\n- `test_controller_pid`\n- `__init__`\n- ...and 37 more","member_count":49,"key_symbols":["Colors","__init__","__init__","get_file_count","get_c_file_count"]},{"label":"information_extract","summary":"## Module: Information Extract\n\nThis module contains **26 symbols** with a cohesion score of **5%** and **85 external connections**.\n\n### Types\n\n- `EOFException`\n- `AppchannelTest`\n\n### Functions\n\n- `check_structs`\n- `param_type_to_str`\n- `extract_information_from_git`\n- `read_data`\n- `terminate`\n- `print_tree`\n- `process`\n- `loadFiles`\n- `inversepoly`\n- `convert_parameters`\n- ...and 14 more","member_count":26,"key_symbols":["EOFException","read_u32","param_type_to_str","log_type_to_str","check_structs"]},{"label":"ramp_corner","summary":"## Module: Ramp Corner\n\nThis module contains **22 symbols** with a cohesion score of **12%** and **63 external connections**.\n\n### Types\n\n- `CollectDataStatic`\n- `Loadcell`\n- `CollectDataRamp`\n- `VoxelSpace`\n\n### Functions\n\n- `max_corner_m`\n- `volume_data`\n- `_close`\n- `get_value`\n- `m_to_vs_f`\n- `pos_m_to_scale`\n- `_ramp_motors_chirp`\n- `_fully_connected`\n- `vs_to_m`\n- `add_pos_m`\n- ...and 8 more","member_count":22,"key_symbols":["Loadcell","_close","CollectDataRamp","CollectDataStatic","_measure"]},{"label":"trajectory_collect","summary":"## Module: Trajectory Collect\n\nThis module contains **21 symbols** with a cohesion score of **19%** and **35 external connections**.\n\n### Types\n\n- `CollectData`\n- `CollectDataDynamic`\n- `Visulizer`\n\n### Functions\n\n- `start_trajectory`\n- `_is_in_volume`\n- `_check_parameters`\n- `base_station_r`\n- `_all_updated`\n- `get_ratio`\n- `set_trajectory_count`\n- `all_voxel_positions`\n- `_applyThrust`\n- `set_value`\n- ...and 8 more","member_count":21,"key_symbols":["CollectData","_write","_average_dict","CollectDataDynamic","_check_parameters"]},{"label":"find_flying","summary":"## Module: Find Flying\n\nThis module contains **18 symbols** with a cohesion score of **7%** and **27 external connections**.\n\n### Types\n\n- `TowerBase`\n\n### Functions\n\n- `connected_count`\n- `prepare_copters`\n- `find_best_controllers`\n- `has_found_position`\n- `is_connected`\n- `__init__`\n- `is_charging`\n- `_pre_state_taking_off`\n- `find_unused_slot_times`\n- `land_all`\n- ...and 7 more","member_count":18,"key_symbols":["_pre_state_taking_off","is_connected","has_found_position","is_ready_for_flight","is_flying"]},{"label":"append_used","summary":"## Module: Append Used\n\nThis module contains **18 symbols** with a cohesion score of **50%** and **0 external connections**.\n\n### Types\n\n- `DependencyGraph`\n\n### Functions\n\n- `extract_related_text`\n- `pre_process_xml`\n- `find`\n- `get_brief_description`\n- `merge_paras`\n- `read_and_parse_xml`\n- `get_detailed_description`\n- `extract_memberdefs`\n- `process_class_file`\n- `depends_on`\n- ...and 7 more","member_count":18,"key_symbols":["DependencyGraph","find","depends_on","used_by","with_dependency_to"]},{"label":"start_tower","summary":"## Module: Start Tower\n\nThis module contains **17 symbols** with a cohesion score of **7%** and **28 external connections**.\n\n### Types\n\n- `Tower`\n- `TrafficController`\n- `SyncTower`\n\n### Functions\n\n- `get_charge_level`\n- `send_report`\n- `start_copters`\n- `start_line`\n- `get_start_offsets`\n- `force_land`\n- `reset_internal`\n- `is_taking_off`\n- `is_charged_for_flight`\n- `fly`\n- ...and 4 more","member_count":17,"key_symbols":["TrafficController","reset_internal","_pre_state_going_to_initial_position","is_taking_off","take_off"]},{"label":"update_flighttime","summary":"## Module: Update Flighttime\n\nThis module contains **14 symbols** with a cohesion score of **25%** and **8 external connections**.\n\n### Types\n\n- `Crazyflie`\n\n### Functions\n\n- `set_flighttime`\n- `update_scene`\n- `update_line`\n- `set_battery`\n- `__init__`\n- `update_marker`\n- `set_state`\n- `set_uptime`\n- `receive_thread`\n- `__init__`\n- ...and 3 more","member_count":14,"key_symbols":["__init__","__init__","__init__","_connect","Crazyflie"]},{"label":"add_node","summary":"## Module: Add Node\n\nThis module contains **13 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `_CmdFileReader`\n- `_DependencyNode`\n\n### Functions\n\n- `add_and_process_c_file`\n- `_add_to_graph`\n- `_process_node`\n- `_parse_includes`\n- `_process_nodes`\n- `_include_file`\n- `mark_processed`\n- `add_parent`\n- `add_child`\n- `add_and_process_dir`\n- ...and 1 more","member_count":13,"key_symbols":["_CmdFileReader","map_to_dependency","_DependencyNode","add_child","add_parent"]},{"label":"canvas_anim","summary":"## Module: Canvas Anim\n\nThis module contains **5 symbols** with a cohesion score of **70%** and **0 external connections**.\n\n### Types\n\n- `AnimCanvas`\n\n### Functions\n\n- `generate_scene`\n- `__init__`\n- `marker`\n- `line`","member_count":5,"key_symbols":["AnimCanvas","__init__","generate_scene","marker","line"]},{"label":"clean","summary":"## Module: Clean\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `_read_cmd_file`\n- `__init__`\n- `_clean_deps`","member_count":3,"key_symbols":["_read_cmd_file","_clean_deps","__init__"]},{"label":"render","summary":"## Module: Render\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `get_color`\n- `render`","member_count":2,"key_symbols":["get_color","render"]},{"label":"console","summary":"## Module: Console\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `appMain`\n- `console_print`","member_count":2,"key_symbols":["console_print","appMain"]},{"label":"get_export","summary":"## Module: Get Export\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `_get_category`\n- `export`","member_count":2,"key_symbols":["export","_get_category"]},{"label":"options_initialize","summary":"## Module: Options Initialize\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `initialize_options`","member_count":1,"key_symbols":["initialize_options"]},{"label":"mem_write_classes","summary":"## Module: Mem Write Classes\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `WriteMem`","member_count":1,"key_symbols":["WriteMem"]},{"label":"group_18","summary":"## Module: Group 18\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `__init__`","member_count":1,"key_symbols":["__init__"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'check_structs' is 81 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'decode' is 66 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'measure' is 58 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'system_id_static' is 309 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'system_id_verification' is 60 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'system_id_dynamic' is 240 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_fully_connected' is 60 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_ramp_motors' is 86 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'decode' is 77 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'create_markdown' is 75 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_update_with_sample' is 57 lines long","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: process_file → log_type_to_str → process_file","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: read_data → calibrate → read_data","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: ode_dc_motor → system_id_dynamic → ode_dc_motor","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: parse → consume → parse","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: base_station_r → populate_base_stations → all_voxel_positions → base_station_r","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: decode → _get_name → decode","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 37 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 30 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 23 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 57 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

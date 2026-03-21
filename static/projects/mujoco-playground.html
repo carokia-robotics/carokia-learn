@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>mujoco_playground — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>mujoco_playground</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **116 files** with **1106 symbols** across **20551 lines of code**, written in **python**.
+
+The codebase is organized into **46 functional modules** (automatically detected communities) with **30 entry points**.
+
+### Modules at a Glance
+
+- **Misc** — 268 symbols (cohesion: 0%)
+- **Get Cube** — 103 symbols (cohesion: 1%)
+- **Cost Vel** — 101 symbols (cohesion: 2%)
+- **Cost Reward** — 64 symbols (cohesion: 3%)
+- **Reward Brax** — 59 symbols (cohesion: 3%)
+- **Reset Step** — 58 symbols (cohesion: 4%)
+- **Obs Wrapper** — 54 symbols (cohesion: 4%)
+- **Randomize Dynamics** — 49 symbols (cohesion: 3%)
+- **Reward Reset** — 48 symbols (cohesion: 5%)
+- **Cost Feet** — 38 symbols (cohesion: 5%)
+- **Assets Control** — 26 symbols (cohesion: 6%)
+- **Get Cost** — 26 symbols (cohesion: 10%)
+- **Config Model** — 26 symbols (cohesion: 6%)
+- **Obs Onnx** — 22 symbols (cohesion: 9%)
+- **Cost Vel 2** — 22 symbols (cohesion: 14%)
+- **Cost Vel 3** — 20 symbols (cohesion: 12%)
+- **Randomize Rand** — 19 symbols (cohesion: 8%)
+- **Config Post** — 18 symbols (cohesion: 13%)
+- **Control Controller** — 14 symbols (cohesion: 10%)
+- **Callback Load** — 11 symbols (cohesion: 11%)
+- **Post Aloha** — 7 symbols (cohesion: 33%)
+- **Default Post** — 3 symbols (cohesion: 67%)
+- **Post** — 3 symbols (cohesion: 100%)
+- **Post 2** — 3 symbols (cohesion: 67%)
+- **Init Post** — 3 symbols (cohesion: 67%)
+- **Init Post 2** — 3 symbols (cohesion: 67%)
+- **Init Post 3** — 3 symbols (cohesion: 67%)
+- **Post 3** — 3 symbols (cohesion: 67%)
+- **Init Post 4** — 3 symbols (cohesion: 67%)
+- **Jnt** — 3 symbols (cohesion: 67%)
+- **Render** — 3 symbols (cohesion: 100%)
+- **Measurement** — 2 symbols (cohesion: 100%)
+- **Gen** — 2 symbols (cohesion: 100%)
+- **Get Load** — 2 symbols (cohesion: 100%)
+- **Step** — 2 symbols (cohesion: 100%)
+- **Gen 2** — 2 symbols (cohesion: 100%)
+- **Footstand Classes** — 2 symbols (cohesion: 100%)
+- **Panda Classes** — 2 symbols (cohesion: 100%)
+- **Gen 3** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `main` — main function, zero callers, calls others
+- `main` — main function
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`main`** (Function)</code> — main function, zero callers, calls others *(score: 1.5)*</li>
+            
+                <li><code>**`main`** (Function)</code> — main function *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **1106 symbols** connected by **1441 relationships** across **46 modules**.
+
+### Relationship Types
+
+- **1409** function calls
+- **28** import dependencies
+- **4** inheritance relationships
+
+### Module Hierarchy
+
+- **Misc** (268 symbols) — includes: `_reset_balance`, `xml_path`, `action_size`
+- **Get Cube** (103 symbols) — includes: `get_gravity`, `_get_termination`, `get_cube_upvector`
+- **Cost Vel** (101 symbols) — includes: `_cost_orientation`, `_reward_tracking_ang_vel`, `_cost_ang_vel_xy`
+- **Cost Reward** (64 symbols) — includes: `_cost_torques`, `_cost_ang_vel_xy`, `_get_termination`
+- **Reward Brax** (59 symbols) — includes: `_get_reward`, `_get_stand_reward`, `demo_default_config`
+- **Reset Step** (58 symbols) — includes: `sample_command`, `_get_obs`, `_extremities`
+- **Obs Wrapper** (54 symbols) — includes: `load`, `test_can_create_all_environments`, `_pole_orientation`
+- **Randomize Dynamics** (49 symbols) — includes: `default_vision_config`, `__init__`, `__init__`
+- **Reward Reset** (48 symbols) — includes: `_get_reward`, `_cost_action_rate`, `step`
+- **Cost Feet** (38 symbols) — includes: `_get_termination`, `_cost_feet_height`, `_cost_energy`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `get_sensor_data` (Function) — used by 97 other symbols
+- `State` (Class) — used by 57 other symbols
+- `update_assets` (Function) — used by 54 other symbols
+- `tolerance` (Function) — used by 40 other symbols
+- `make_data` (Function) — used by 39 other symbols
+- `get_gravity` (Function) — used by 26 other symbols
+- `get_assets` (Function) — used by 22 other symbols
+- `get_gyro` (Function) — used by 22 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 268 symbols, cohesion 0%
+- **Get Cube** — 103 symbols, cohesion 1%
+- **Cost Vel** — 101 symbols, cohesion 2%
+- **Reward Brax** — 59 symbols, cohesion 3%
+- **Cost Reward** — 64 symbols, cohesion 3%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 116 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">116</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">20551</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">1106</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">2.9</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/utils/plotting.py</code></div>
+                <div class="card-meta">complexity: 20.4 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/reward.py</code></div>
+                <div class="card-meta">complexity: 16.5 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/print_tables.py</code></div>
+                <div class="card-meta">complexity: 13.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/randomize.py</code></div>
+                <div class="card-meta">complexity: 10.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/randomize.py</code></div>
+                <div class="card-meta">complexity: 10.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/randomize.py</code></div>
+                <div class="card-meta">complexity: 10.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/randomize.py</code></div>
+                <div class="card-meta">complexity: 10.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/learning/train_rsl_rl.py</code></div>
+                <div class="card-meta">complexity: 9.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/locomotion_params.py</code></div>
+                <div class="card-meta">complexity: 8.5 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/randomize_vision.py</code></div>
+                <div class="card-meta">complexity: 8.0 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (46)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">268 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **268 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `Joystick`
+- `H1Env`
+- `AeroHandEnv`
+- `Joystick`
+- `Balance`
+- `AlohaEnv`
+- `HandOver`
+- `BerkeleyHumanoidEnv`
+- `T1Env`
+- `WrapperTest`
+- `PandaRobotiqPushCube`
+- `SwingUp`
+- `SpotEnv`
+- `SinglePegInsertion`
+- `RegistryTest`
+- `Joystick`
+- `Op3Env`
+- `Reacher`
+- `Hopper`
+- `G1Env`
+- `Balance`
+- `Run`
+- `DemoEnv`
+- `JoystickGaitTracking`
+- `PandaBase`
+- `TestSuite`
+- `Joystick`
+- `Go1Env`
+- `Joystick`
+- `Humanoid`
+- `Joystick`
+- `LeapHandEnv`
+- `InplaceGaitTracking`
+- `BallInCup`
+- `PandaOpenCabinet`
+- `Getup`
+- `Joystick`
+- `Swim`
+- `Joystick`
+- `PointMass`
+- `PlanarWalker`
+- `Getup`
+- `Joystick`
+- `Turn`
+- `MjxEnv`
+- `ApolloEnv`
+- `TrainingPlotter`
+- `Spin`
+- `Swim`
+- `TestSuite`
+- `JoystickGaitTracking`
+- `PandaRobotiqBase`
+
+### Functions
+
+- `_reset_balance`
+- `xml_path`
+- `action_size`
+- `mj_model`
+- `inference_fn`
+- `task_to_xml`
+- `__init__`
+- `xml_path`
+- `mjx_model`
+- `plot_bars`
+- ...and 206 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: rscope_fn, policy_params_fn, inference_fn, rollout, scientific_notation_formatter</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">get_cube</div>
+                        <div class="card-meta">103 symbols</div>
+                        <p>## Module: Get Cube
+
+This module contains **103 symbols** with a cohesion score of **1%** and **100 external connections**.
+
+### Functions
+
+- `get_gravity`
+- `_get_termination`
+- `get_cube_upvector`
+- `get_global_angvel`
+- `get_global_linvel`
+- `_cost_stay_still`
+- `get_gravity`
+- `get_xfrc`
+- `_cost_pose`
+- `get_cube_linvel`
+- ...and 93 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset, get_cube_position, get_cube_angvel, get_cube_angacc, get_cube_upvector</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">cost_vel</div>
+                        <div class="card-meta">101 symbols</div>
+                        <p>## Module: Cost Vel
+
+This module contains **101 symbols** with a cohesion score of **2%** and **50 external connections**.
+
+### Functions
+
+- `_cost_orientation`
+- `_reward_tracking_ang_vel`
+- `_cost_ang_vel_xy`
+- `_cost_collision`
+- `_apply_noise`
+- `_cost_lin_vel_z`
+- `_reward_tracking_lin_vel`
+- `_cost_lin_vel_z`
+- `_cost_ang_vel_xy`
+- `_cost_feet_clearance`
+- ...and 91 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: step, _get_obs, _cost_feet_slip, sample_command, get_gravity</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">cost_reward</div>
+                        <div class="card-meta">64 symbols</div>
+                        <p>## Module: Cost Reward
+
+This module contains **64 symbols** with a cohesion score of **3%** and **51 external connections**.
+
+### Functions
+
+- `_cost_torques`
+- `_cost_ang_vel_xy`
+- `_get_termination`
+- `_get_obs`
+- `_cost_stand_still`
+- `_cost_action_rate`
+- `_cost_lin_vel_z`
+- `_get_obs`
+- `_cost_feet_clearance`
+- `_cost_torques`
+- ...and 54 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset, _get_termination, _get_reward, _reward_tracking_lin_vel, _reward_tracking_ang_vel</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">reward_brax</div>
+                        <div class="card-meta">59 symbols</div>
+                        <p>## Module: Reward Brax
+
+This module contains **59 symbols** with a cohesion score of **3%** and **57 external connections**.
+
+### Types
+
+- `BraxDomainRandomizationVmapWrapper`
+- `BraxAutoResetWrapper`
+- `TestSuite`
+
+### Functions
+
+- `_get_reward`
+- `_get_stand_reward`
+- `demo_default_config`
+- `get_default_config`
+- `_sigmoids`
+- `_nose_to_target_dist`
+- `_get_reward`
+- `_sparse_reward`
+- `_speed`
+- `_center_of_mass_velocity`
+- ...and 46 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: main, do_rollout, get_rl_config, render_callback, unvmap</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">reset_step</div>
+                        <div class="card-meta">58 symbols</div>
+                        <p>## Module: Reset Step
+
+This module contains **58 symbols** with a cohesion score of **4%** and **57 external connections**.
+
+### Functions
+
+- `sample_command`
+- `_get_obs`
+- `_extremities`
+- `reset`
+- `reset`
+- `_get_obs`
+- `_reset_if_success`
+- `step`
+- `reset`
+- `_get_obs`
+- ...and 48 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: step, _get_rewards, adjust_brightness, step, _get_obs</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">obs_wrapper</div>
+                        <div class="card-meta">54 symbols</div>
+                        <p>## Module: Obs Wrapper
+
+This module contains **54 symbols** with a cohesion score of **4%** and **52 external connections**.
+
+### Types
+
+- `DoneEnv`
+- `Wrapper`
+- `RSLRLBraxWrapper`
+
+### Functions
+
+- `load`
+- `test_can_create_all_environments`
+- `_pole_orientation`
+- `test_new_env`
+- `_get_obs`
+- `_get_obs`
+- `get_domain_randomizer`
+- `_orientation_error`
+- `get_load_path`
+- `test_can_create_all_environments`
+- ...and 41 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_rl_config, main, load_madrona_mjx_result, configure_plotting_sn_params, plot_stacked_bars_seaborn</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">randomize_dynamics</div>
+                        <div class="card-meta">49 symbols</div>
+                        <p>## Module: Randomize Dynamics
+
+This module contains **49 symbols** with a cohesion score of **3%** and **35 external connections**.
+
+### Types
+
+- `CubeReorient`
+- `CubeRotateZAxis`
+- `CubeRotateZAxis`
+- `PandaPickCubeCartesian`
+
+### Functions
+
+- `default_vision_config`
+- `__init__`
+- `__init__`
+- `__init__`
+- `default_config`
+- `default_config`
+- `env_step`
+- `dof_width`
+- `__getattr__`
+- `get_gravity`
+- ...and 35 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: step, env_step, domain_randomize, rand, default_config</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">reward_reset</div>
+                        <div class="card-meta">48 symbols</div>
+                        <p>## Module: Reward Reset
+
+This module contains **48 symbols** with a cohesion score of **5%** and **38 external connections**.
+
+### Types
+
+- `State`
+
+### Functions
+
+- `_get_reward`
+- `_cost_action_rate`
+- `step`
+- `_get_termination`
+- `reset`
+- `_cost_dof_acc`
+- `_reward_stand_still`
+- `_cost_action_rate`
+- `_get_termination`
+- `uniform_quat`
+- ...and 37 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset, reset, _get_reward, uniform_quat, reset</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">cost_feet</div>
+                        <div class="card-meta">38 symbols</div>
+                        <p>## Module: Cost Feet
+
+This module contains **38 symbols** with a cohesion score of **5%** and **8 external connections**.
+
+### Functions
+
+- `_get_termination`
+- `_cost_feet_height`
+- `_cost_energy`
+- `_cost_feet_phase`
+- `_reward_tracking_ang_vel`
+- `_reward_feet_phase`
+- `_reward_feet_phase`
+- `_reward_tracking_lin_vel`
+- `_cost_joint_deviation_knee`
+- `_cost_pose`
+- ...and 28 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _reward_feet_phase, _reward_feet_phase, reset, _reward_feet_phase, _reward_feet_phase</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">assets_control</div>
+                        <div class="card-meta">26 symbols</div>
+                        <p>## Module: Assets Control
+
+This module contains **26 symbols** with a cohesion score of **6%** and **50 external connections**.
+
+### Functions
+
+- `get_assets`
+- `__init__`
+- `__init__`
+- `get_assets`
+- `get_assets`
+- `get_assets`
+- `__init__`
+- `get_assets`
+- `__init__`
+- `get_assets`
+- ...and 16 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_obs, get_control, update_command, get_assets, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">get_cost</div>
+                        <div class="card-meta">26 symbols</div>
+                        <p>## Module: Get Cost
+
+This module contains **26 symbols** with a cohesion score of **10%** and **31 external connections**.
+
+### Functions
+
+- `get_cube_orientation`
+- `reset`
+- `_reward_angvel`
+- `step`
+- `_get_global_linvel`
+- `_get_termination`
+- `_get_obs`
+- `_get_global_angvel`
+- `_get_reward`
+- `_cost_energy`
+- ...and 16 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: step, _get_termination, _get_obs, _get_reward, _cost_torques</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">config_model</div>
+                        <div class="card-meta">26 symbols</div>
+                        <p>## Module: Config Model
+
+This module contains **26 symbols** with a cohesion score of **6%** and **11 external connections**.
+
+### Functions
+
+- `_post_init`
+- `perturb_orientation`
+- `_make_body`
+- `_make_turn_model`
+- `default_config`
+- `__init__`
+- `default_config`
+- `default_config`
+- `default_config`
+- `default_config`
+- ...and 16 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, sample_light_position, perturb_orientation, get_assets, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">obs_onnx</div>
+                        <div class="card-meta">22 symbols</div>
+                        <p>## Module: Obs Onnx
+
+This module contains **22 symbols** with a cohesion score of **9%** and **11 external connections**.
+
+### Types
+
+- `OnnxController`
+- `OnnxController`
+- `OnnxController`
+
+### Functions
+
+- `load_callback`
+- `load_callback`
+- `get_obs`
+- `get_obs`
+- `__init__`
+- `__init__`
+- `__init__`
+- `get_assets`
+- `_connect_device`
+- `get_obs`
+- ...and 9 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: progress, OnnxController, __init__, get_obs, load_callback</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">cost_vel_2</div>
+                        <div class="card-meta">22 symbols</div>
+                        <p>## Module: Cost Vel 2
+
+This module contains **22 symbols** with a cohesion score of **14%** and **2 external connections**.
+
+### Functions
+
+- `_get_localrpyrate`
+- `step`
+- `_cost_stand_still`
+- `_reward_tracking_lin_vel`
+- `_get_reward`
+- `_cost_feet_clearance`
+- `_get_sensor_data`
+- `_get_obs`
+- `sample_command`
+- `_cost_action_rate`
+- ...and 12 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: sample_command, reset, step, _get_obs, _get_gravity</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">cost_vel_3</div>
+                        <div class="card-meta">20 symbols</div>
+                        <p>## Module: Cost Vel 3
+
+This module contains **20 symbols** with a cohesion score of **12%** and **4 external connections**.
+
+### Functions
+
+- `_get_localrpyrate`
+- `_cost_action_rate`
+- `_get_obs`
+- `_cost_ang_vel_xy`
+- `gen_dir`
+- `_reward_feet_air_time`
+- `_cost_stand_still`
+- `_get_gravity`
+- `_maybe_apply_perturbation`
+- `_cost_termination`
+- ...and 10 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: sample_command, step, _get_obs, _get_gravity, _get_localrpyrate</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">randomize_rand</div>
+                        <div class="card-meta">19 symbols</div>
+                        <p>## Module: Randomize Rand
+
+This module contains **19 symbols** with a cohesion score of **8%** and **19 external connections**.
+
+### Types
+
+- `OnnxController`
+
+### Functions
+
+- `domain_randomize`
+- `tree_replace`
+- `qpos_width`
+- `domain_randomize`
+- `_post_init`
+- `get_qvel_ids`
+- `__init__`
+- `default_config`
+- `domain_randomize`
+- `rand`
+- ...and 8 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: OnnxController, __init__, default_config, mat_from_dh_revolute, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">config_post</div>
+                        <div class="card-meta">18 symbols</div>
+                        <p>## Module: Config Post
+
+This module contains **18 symbols** with a cohesion score of **13%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `__init__`
+- `task_to_xml`
+- `default_config`
+- `default_config`
+- `_post_init`
+- `default_config`
+- `_post_init`
+- `default_config`
+- `_post_init`
+- ...and 8 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: task_to_xml, default_config, __init__, _post_init, default_config</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">control_controller</div>
+                        <div class="card-meta">14 symbols</div>
+                        <p>## Module: Control Controller
+
+This module contains **14 symbols** with a cohesion score of **10%** and **10 external connections**.
+
+### Types
+
+- `OnnxController`
+- `Gamepad`
+- `OnnxController`
+
+### Functions
+
+- `get_control`
+- `__init__`
+- `default_config`
+- `get_control`
+- `__init__`
+- `_interpolate`
+- `get_control`
+- `get_control`
+- `run`
+- `get_control`
+- ...and 1 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: run, get_control, get_control, _interpolate, Gamepad</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">callback_load</div>
+                        <div class="card-meta">11 symbols</div>
+                        <p>## Module: Callback Load
+
+This module contains **11 symbols** with a cohesion score of **11%** and **20 external connections**.
+
+### Functions
+
+- `__init__`
+- `default_config`
+- `load_callback`
+- `load_callback`
+- `__init__`
+- `modify_model`
+- `_post_init`
+- `compute_franka_fk`
+- `get_qpos_ids`
+- `_make_model`
+- ...and 1 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: load_callback, load_callback, load_callback, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">post_aloha</div>
+                        <div class="card-meta">7 symbols</div>
+                        <p>## Module: Post Aloha
+
+This module contains **7 symbols** with a cohesion score of **33%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `__init__`
+- `_post_init_aloha`
+- `_post_init`
+- `_post_init`
+- `default_config`
+- `default_config`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init, default_config, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">default_post</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Default Post
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `default_config`
+- `_post_init`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">post</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Post
+
+This module contains **3 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `_post_init`
+- `default_config`
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">post_2</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Post 2
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `_post_init`
+- `default_config`
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_post</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Init Post
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `_post_init`
+- `default_config`
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_post_2</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Init Post 2
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `default_config`
+- `_post_init`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_post_3</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Init Post 3
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `default_config`
+- `_post_init`
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">post_3</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Post 3
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `_post_init`
+- `__init__`
+- `default_config`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_post_4</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Init Post 4
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `default_config`
+- `_post_init`
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: default_config, __init__, _post_init</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">jnt</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Jnt
+
+This module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.
+
+### Functions
+
+- `_post_init`
+- `jnt_vel_range`
+- `jnt_range`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _post_init, jnt_range, jnt_vel_range</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">render</div>
+                        <div class="card-meta">3 symbols</div>
+                        <p>## Module: Render
+
+This module contains **3 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `render_array`
+- `render`
+- `get_image`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: render, render_array, get_image</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">measurement</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Measurement
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `MeasurementMode`
+
+### Functions
+
+- `calculate_average_fps`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: MeasurementMode, calculate_average_fps</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">gen</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Gen
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `gen_dir`
+- `wait`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: gen_dir, wait</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">get_load</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Get Load
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `get_default_config`
+- `load`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_default_config, load</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">step</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Step
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `step`
+- `single_step`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: single_step, step</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">gen_2</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Gen 2
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `wait`
+- `gen_dir`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: gen_dir, wait</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">footstand_classes</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Footstand Classes
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `Handstand`
+- `Footstand`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Handstand, Footstand</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">panda_classes</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Panda Classes
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `PandaPickCubeOrientation`
+- `PandaPickCube`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: PandaPickCube, PandaPickCubeOrientation</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">gen_3</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Gen 3
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `gen_dir`
+- `wait`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: gen_dir, wait</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">reset</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Reset
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `reset`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: reset</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">step_2</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Step 2
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `step`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: step</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">group_42</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Group 42
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `run`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: run</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">render_2</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Render 2
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `render`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: render</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">randomizer_domain</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Randomizer Domain
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `get_domain_randomizer`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_domain_randomizer</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">config</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Config
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `get_default_config`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: get_default_config</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">load</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Load
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `load`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: load</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (149)</summary>
+                <div class="content">
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'main' is 339 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'main' is 176 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'plot_stacked_bars_seaborn' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_initialize_metrics' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'update' is 112 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_plot_metrics' is 72 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 72 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'domain_randomize' is 129 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rand' is 78 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 89 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'step' is 136 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'compute_franka_ik' is 240 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 73 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'domain_randomize' is 159 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rand' is 84 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'domain_randomize' is 148 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rand' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 91 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 65 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'_get_obs' is 102 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'domain_randomize' is 147 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rand' is 76 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_reward' is 73 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_post_init' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 73 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_reward' is 80 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_single_obs' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'domain_randomize' is 78 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 67 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_post_init' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 86 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 76 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 87 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_reward' is 56 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_maybe_apply_perturbation' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'domain_randomize' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'_post_init' is 127 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 85 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 87 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_reward' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'domain_randomize' is 89 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rand_dynamics' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_post_init' is 56 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 79 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 67 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 64 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 88 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_maybe_apply_perturbation' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 86 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 84 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_post_init' is 60 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 68 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 58 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 72 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 65 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 59 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'domain_randomize' is 104 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rand_dynamics' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 68 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_post_init' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 93 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 97 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 87 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_reward' is 60 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 56 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'default_config' is 53 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 84 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 87 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_maybe_apply_perturbation' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'reset' is 61 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'step' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_get_obs' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'test_auto_reset_wrapper' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'_sigmoids' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'brax_ppo_config' is 155 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'brax_ppo_config' is 142 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'rsl_rl_config' is 57 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: get_image → render_array → render → get_image</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 7 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 15 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 17 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 18 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 17 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 20 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 18 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 9 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 11 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 31 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 26 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 34 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 21 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 21 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 30 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 15 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 21 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 30 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 19 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 36 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 33 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 17 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 29 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 21 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 15 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 13 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 17 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 16 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 15 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 18 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 38 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 31 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/mujoco_playground/learning/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/learning/train_jax_ppo.py
+├── /Users/bm/carokia-repos/mujoco_playground/learning/train_rsl_rl.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/acrobot.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/ball_in_cup.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/cartpole.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/cheetah.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/common.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/dm_control_suite_test.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/finger.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/fish.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/hopper.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/humanoid.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/pendulum.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/point_mass.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/reacher.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/swimmer.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/walker.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/gait.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/barkour/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/barkour/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/berkeley_humanoid_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/randomize.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/g1_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/randomize.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/getup.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/go1_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/handstand.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/randomize.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/h1_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/inplace_gait_tracking.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/joystick_gait_tracking.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/locomotion_test.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/op3_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/getup.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/joystick_gait_tracking.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/spot_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/randomize.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/t1_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/aero_hand_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/rotate_z.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/aloha_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/handover.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/single_peg_insertion.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/open_cabinet.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/panda.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/panda_kinematics.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/pick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/pick_cartesian.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/randomize_vision.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda_robotiq/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda_robotiq/panda_robotiq.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda_robotiq/push_cube.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/base.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/leap_hand_constants.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/reorient.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/rotate_z.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/manipulation_test.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/mjx_env.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/registry.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/registry_test.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/reward.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/wrapper.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/wrapper_test.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/wrapper_torch.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/__init__.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/dm_control_suite_params.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/locomotion_params.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/manipulation_params.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/benchmark.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/make_plots.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/print_tables.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/gamepad_reader.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_apollo_joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_bh_joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_g1_joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_go1_joystick.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_leap_reorient.py
+├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_t1_joystick.py
+└── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/utils/plotting.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 09:24 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"mujoco_playground","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **116 files** with **1106 symbols** across **20551 lines of code**, written in **python**.\n\nThe codebase is organized into **46 functional modules** (automatically detected communities) with **30 entry points**.\n\n### Modules at a Glance\n\n- **Misc** — 268 symbols (cohesion: 0%)\n- **Get Cube** — 103 symbols (cohesion: 1%)\n- **Cost Vel** — 101 symbols (cohesion: 2%)\n- **Cost Reward** — 64 symbols (cohesion: 3%)\n- **Reward Brax** — 59 symbols (cohesion: 3%)\n- **Reset Step** — 58 symbols (cohesion: 4%)\n- **Obs Wrapper** — 54 symbols (cohesion: 4%)\n- **Randomize Dynamics** — 49 symbols (cohesion: 3%)\n- **Reward Reset** — 48 symbols (cohesion: 5%)\n- **Cost Feet** — 38 symbols (cohesion: 5%)\n- **Assets Control** — 26 symbols (cohesion: 6%)\n- **Get Cost** — 26 symbols (cohesion: 10%)\n- **Config Model** — 26 symbols (cohesion: 6%)\n- **Obs Onnx** — 22 symbols (cohesion: 9%)\n- **Cost Vel 2** — 22 symbols (cohesion: 14%)\n- **Cost Vel 3** — 20 symbols (cohesion: 12%)\n- **Randomize Rand** — 19 symbols (cohesion: 8%)\n- **Config Post** — 18 symbols (cohesion: 13%)\n- **Control Controller** — 14 symbols (cohesion: 10%)\n- **Callback Load** — 11 symbols (cohesion: 11%)\n- **Post Aloha** — 7 symbols (cohesion: 33%)\n- **Default Post** — 3 symbols (cohesion: 67%)\n- **Post** — 3 symbols (cohesion: 100%)\n- **Post 2** — 3 symbols (cohesion: 67%)\n- **Init Post** — 3 symbols (cohesion: 67%)\n- **Init Post 2** — 3 symbols (cohesion: 67%)\n- **Init Post 3** — 3 symbols (cohesion: 67%)\n- **Post 3** — 3 symbols (cohesion: 67%)\n- **Init Post 4** — 3 symbols (cohesion: 67%)\n- **Jnt** — 3 symbols (cohesion: 67%)\n- **Render** — 3 symbols (cohesion: 100%)\n- **Measurement** — 2 symbols (cohesion: 100%)\n- **Gen** — 2 symbols (cohesion: 100%)\n- **Get Load** — 2 symbols (cohesion: 100%)\n- **Step** — 2 symbols (cohesion: 100%)\n- **Gen 2** — 2 symbols (cohesion: 100%)\n- **Footstand Classes** — 2 symbols (cohesion: 100%)\n- **Panda Classes** — 2 symbols (cohesion: 100%)\n- **Gen 3** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `main` — main function, zero callers, calls others\n- `main` — main function\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others","architecture_mermaid":"","reading_order":[{"path":"**`main`** (Function)","reason":"main function, zero callers, calls others *(score: 1.5)*","language":""},{"path":"**`main`** (Function)","reason":"main function *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **1106 symbols** connected by **1441 relationships** across **46 modules**.\n\n### Relationship Types\n\n- **1409** function calls\n- **28** import dependencies\n- **4** inheritance relationships\n\n### Module Hierarchy\n\n- **Misc** (268 symbols) — includes: `_reset_balance`, `xml_path`, `action_size`\n- **Get Cube** (103 symbols) — includes: `get_gravity`, `_get_termination`, `get_cube_upvector`\n- **Cost Vel** (101 symbols) — includes: `_cost_orientation`, `_reward_tracking_ang_vel`, `_cost_ang_vel_xy`\n- **Cost Reward** (64 symbols) — includes: `_cost_torques`, `_cost_ang_vel_xy`, `_get_termination`\n- **Reward Brax** (59 symbols) — includes: `_get_reward`, `_get_stand_reward`, `demo_default_config`\n- **Reset Step** (58 symbols) — includes: `sample_command`, `_get_obs`, `_extremities`\n- **Obs Wrapper** (54 symbols) — includes: `load`, `test_can_create_all_environments`, `_pole_orientation`\n- **Randomize Dynamics** (49 symbols) — includes: `default_vision_config`, `__init__`, `__init__`\n- **Reward Reset** (48 symbols) — includes: `_get_reward`, `_cost_action_rate`, `step`\n- **Cost Feet** (38 symbols) — includes: `_get_termination`, `_cost_feet_height`, `_cost_energy`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `get_sensor_data` (Function) — used by 97 other symbols\n- `State` (Class) — used by 57 other symbols\n- `update_assets` (Function) — used by 54 other symbols\n- `tolerance` (Function) — used by 40 other symbols\n- `make_data` (Function) — used by 39 other symbols\n- `get_gravity` (Function) — used by 26 other symbols\n- `get_assets` (Function) — used by 22 other symbols\n- `get_gyro` (Function) — used by 22 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 268 symbols, cohesion 0%\n- **Get Cube** — 103 symbols, cohesion 1%\n- **Cost Vel** — 101 symbols, cohesion 2%\n- **Reward Brax** — 59 symbols, cohesion 3%\n- **Cost Reward** — 64 symbols, cohesion 3%","why_trending":"## Why This Project\n\nThis project is written in python with 116 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":116,"total_sloc":20551,"total_symbols":1106,"avg_complexity":2.897367363516347,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/utils/plotting.py","heatmap_score":0.0,"complexity":20.428571428571427,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/reward.py","heatmap_score":0.0,"complexity":16.5,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/print_tables.py","heatmap_score":0.0,"complexity":13.0,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/randomize.py","heatmap_score":0.0,"complexity":10.0,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/randomize.py","heatmap_score":0.0,"complexity":10.0,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/randomize.py","heatmap_score":0.0,"complexity":10.0,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/randomize.py","heatmap_score":0.0,"complexity":10.0,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/learning/train_rsl_rl.py","heatmap_score":0.0,"complexity":9.25,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/locomotion_params.py","heatmap_score":0.0,"complexity":8.5,"churn":0},{"path":"/Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/randomize_vision.py","heatmap_score":0.0,"complexity":8.0,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/mujoco_playground/learning/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/learning/train_jax_ppo.py\n├── /Users/bm/carokia-repos/mujoco_playground/learning/train_rsl_rl.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/acrobot.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/ball_in_cup.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/cartpole.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/cheetah.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/common.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/dm_control_suite_test.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/finger.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/fish.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/hopper.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/humanoid.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/pendulum.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/point_mass.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/reacher.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/swimmer.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/dm_control_suite/walker.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/gait.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/apollo/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/barkour/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/barkour/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/berkeley_humanoid_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/berkeley_humanoid/randomize.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/g1_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/g1/randomize.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/getup.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/go1_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/handstand.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/go1/randomize.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/h1_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/inplace_gait_tracking.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/h1/joystick_gait_tracking.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/locomotion_test.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/op3/op3_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/getup.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/joystick_gait_tracking.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/spot/spot_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/randomize.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/locomotion/t1/t1_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/aero_hand_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aero_hand/rotate_z.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/aloha_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/handover.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/aloha/single_peg_insertion.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/open_cabinet.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/panda.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/panda_kinematics.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/pick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/pick_cartesian.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda/randomize_vision.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda_robotiq/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda_robotiq/panda_robotiq.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/franka_emika_panda_robotiq/push_cube.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/base.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/leap_hand_constants.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/reorient.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/leap_hand/rotate_z.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/manipulation/manipulation_test.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/mjx_env.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/registry.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/registry_test.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/reward.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/wrapper.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/wrapper_test.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/_src/wrapper_torch.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/__init__.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/dm_control_suite_params.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/locomotion_params.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/config/manipulation_params.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/benchmark.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/make_plots.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/madrona_benchmarking/print_tables.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/gamepad_reader.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_apollo_joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_bh_joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_g1_joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_go1_joystick.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_leap_reorient.py\n├── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/sim2sim/play_t1_joystick.py\n└── /Users/bm/carokia-repos/mujoco_playground/mujoco_playground/experimental/utils/plotting.py","communities":[{"label":"misc","summary":"## Module: Misc\n\nThis module contains **268 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `Joystick`\n- `H1Env`\n- `AeroHandEnv`\n- `Joystick`\n- `Balance`\n- `AlohaEnv`\n- `HandOver`\n- `BerkeleyHumanoidEnv`\n- `T1Env`\n- `WrapperTest`\n- `PandaRobotiqPushCube`\n- `SwingUp`\n- `SpotEnv`\n- `SinglePegInsertion`\n- `RegistryTest`\n- `Joystick`\n- `Op3Env`\n- `Reacher`\n- `Hopper`\n- `G1Env`\n- `Balance`\n- `Run`\n- `DemoEnv`\n- `JoystickGaitTracking`\n- `PandaBase`\n- `TestSuite`\n- `Joystick`\n- `Go1Env`\n- `Joystick`\n- `Humanoid`\n- `Joystick`\n- `LeapHandEnv`\n- `InplaceGaitTracking`\n- `BallInCup`\n- `PandaOpenCabinet`\n- `Getup`\n- `Joystick`\n- `Swim`\n- `Joystick`\n- `PointMass`\n- `PlanarWalker`\n- `Getup`\n- `Joystick`\n- `Turn`\n- `MjxEnv`\n- `ApolloEnv`\n- `TrainingPlotter`\n- `Spin`\n- `Swim`\n- `TestSuite`\n- `JoystickGaitTracking`\n- `PandaRobotiqBase`\n\n### Functions\n\n- `_reset_balance`\n- `xml_path`\n- `action_size`\n- `mj_model`\n- `inference_fn`\n- `task_to_xml`\n- `__init__`\n- `xml_path`\n- `mjx_model`\n- `plot_bars`\n- ...and 206 more","member_count":268,"key_symbols":["rscope_fn","policy_params_fn","inference_fn","rollout","scientific_notation_formatter"]},{"label":"get_cube","summary":"## Module: Get Cube\n\nThis module contains **103 symbols** with a cohesion score of **1%** and **100 external connections**.\n\n### Functions\n\n- `get_gravity`\n- `_get_termination`\n- `get_cube_upvector`\n- `get_global_angvel`\n- `get_global_linvel`\n- `_cost_stay_still`\n- `get_gravity`\n- `get_xfrc`\n- `_cost_pose`\n- `get_cube_linvel`\n- ...and 93 more","member_count":103,"key_symbols":["reset","get_cube_position","get_cube_angvel","get_cube_angacc","get_cube_upvector"]},{"label":"cost_vel","summary":"## Module: Cost Vel\n\nThis module contains **101 symbols** with a cohesion score of **2%** and **50 external connections**.\n\n### Functions\n\n- `_cost_orientation`\n- `_reward_tracking_ang_vel`\n- `_cost_ang_vel_xy`\n- `_cost_collision`\n- `_apply_noise`\n- `_cost_lin_vel_z`\n- `_reward_tracking_lin_vel`\n- `_cost_lin_vel_z`\n- `_cost_ang_vel_xy`\n- `_cost_feet_clearance`\n- ...and 91 more","member_count":101,"key_symbols":["step","_get_obs","_cost_feet_slip","sample_command","get_gravity"]},{"label":"cost_reward","summary":"## Module: Cost Reward\n\nThis module contains **64 symbols** with a cohesion score of **3%** and **51 external connections**.\n\n### Functions\n\n- `_cost_torques`\n- `_cost_ang_vel_xy`\n- `_get_termination`\n- `_get_obs`\n- `_cost_stand_still`\n- `_cost_action_rate`\n- `_cost_lin_vel_z`\n- `_get_obs`\n- `_cost_feet_clearance`\n- `_cost_torques`\n- ...and 54 more","member_count":64,"key_symbols":["reset","_get_termination","_get_reward","_reward_tracking_lin_vel","_reward_tracking_ang_vel"]},{"label":"reward_brax","summary":"## Module: Reward Brax\n\nThis module contains **59 symbols** with a cohesion score of **3%** and **57 external connections**.\n\n### Types\n\n- `BraxDomainRandomizationVmapWrapper`\n- `BraxAutoResetWrapper`\n- `TestSuite`\n\n### Functions\n\n- `_get_reward`\n- `_get_stand_reward`\n- `demo_default_config`\n- `get_default_config`\n- `_sigmoids`\n- `_nose_to_target_dist`\n- `_get_reward`\n- `_sparse_reward`\n- `_speed`\n- `_center_of_mass_velocity`\n- ...and 46 more","member_count":59,"key_symbols":["main","do_rollout","get_rl_config","render_callback","unvmap"]},{"label":"reset_step","summary":"## Module: Reset Step\n\nThis module contains **58 symbols** with a cohesion score of **4%** and **57 external connections**.\n\n### Functions\n\n- `sample_command`\n- `_get_obs`\n- `_extremities`\n- `reset`\n- `reset`\n- `_get_obs`\n- `_reset_if_success`\n- `step`\n- `reset`\n- `_get_obs`\n- ...and 48 more","member_count":58,"key_symbols":["step","_get_rewards","adjust_brightness","step","_get_obs"]},{"label":"obs_wrapper","summary":"## Module: Obs Wrapper\n\nThis module contains **54 symbols** with a cohesion score of **4%** and **52 external connections**.\n\n### Types\n\n- `DoneEnv`\n- `Wrapper`\n- `RSLRLBraxWrapper`\n\n### Functions\n\n- `load`\n- `test_can_create_all_environments`\n- `_pole_orientation`\n- `test_new_env`\n- `_get_obs`\n- `_get_obs`\n- `get_domain_randomizer`\n- `_orientation_error`\n- `get_load_path`\n- `test_can_create_all_environments`\n- ...and 41 more","member_count":54,"key_symbols":["get_rl_config","main","load_madrona_mjx_result","configure_plotting_sn_params","plot_stacked_bars_seaborn"]},{"label":"randomize_dynamics","summary":"## Module: Randomize Dynamics\n\nThis module contains **49 symbols** with a cohesion score of **3%** and **35 external connections**.\n\n### Types\n\n- `CubeReorient`\n- `CubeRotateZAxis`\n- `CubeRotateZAxis`\n- `PandaPickCubeCartesian`\n\n### Functions\n\n- `default_vision_config`\n- `__init__`\n- `__init__`\n- `__init__`\n- `default_config`\n- `default_config`\n- `env_step`\n- `dof_width`\n- `__getattr__`\n- `get_gravity`\n- ...and 35 more","member_count":49,"key_symbols":["step","env_step","domain_randomize","rand","default_config"]},{"label":"reward_reset","summary":"## Module: Reward Reset\n\nThis module contains **48 symbols** with a cohesion score of **5%** and **38 external connections**.\n\n### Types\n\n- `State`\n\n### Functions\n\n- `_get_reward`\n- `_cost_action_rate`\n- `step`\n- `_get_termination`\n- `reset`\n- `_cost_dof_acc`\n- `_reward_stand_still`\n- `_cost_action_rate`\n- `_get_termination`\n- `uniform_quat`\n- ...and 37 more","member_count":48,"key_symbols":["reset","reset","_get_reward","uniform_quat","reset"]},{"label":"cost_feet","summary":"## Module: Cost Feet\n\nThis module contains **38 symbols** with a cohesion score of **5%** and **8 external connections**.\n\n### Functions\n\n- `_get_termination`\n- `_cost_feet_height`\n- `_cost_energy`\n- `_cost_feet_phase`\n- `_reward_tracking_ang_vel`\n- `_reward_feet_phase`\n- `_reward_feet_phase`\n- `_reward_tracking_lin_vel`\n- `_cost_joint_deviation_knee`\n- `_cost_pose`\n- ...and 28 more","member_count":38,"key_symbols":["_reward_feet_phase","_reward_feet_phase","reset","_reward_feet_phase","_reward_feet_phase"]},{"label":"assets_control","summary":"## Module: Assets Control\n\nThis module contains **26 symbols** with a cohesion score of **6%** and **50 external connections**.\n\n### Functions\n\n- `get_assets`\n- `__init__`\n- `__init__`\n- `get_assets`\n- `get_assets`\n- `get_assets`\n- `__init__`\n- `get_assets`\n- `__init__`\n- `get_assets`\n- ...and 16 more","member_count":26,"key_symbols":["get_obs","get_control","update_command","get_assets","__init__"]},{"label":"get_cost","summary":"## Module: Get Cost\n\nThis module contains **26 symbols** with a cohesion score of **10%** and **31 external connections**.\n\n### Functions\n\n- `get_cube_orientation`\n- `reset`\n- `_reward_angvel`\n- `step`\n- `_get_global_linvel`\n- `_get_termination`\n- `_get_obs`\n- `_get_global_angvel`\n- `_get_reward`\n- `_cost_energy`\n- ...and 16 more","member_count":26,"key_symbols":["step","_get_termination","_get_obs","_get_reward","_cost_torques"]},{"label":"config_model","summary":"## Module: Config Model\n\nThis module contains **26 symbols** with a cohesion score of **6%** and **11 external connections**.\n\n### Functions\n\n- `_post_init`\n- `perturb_orientation`\n- `_make_body`\n- `_make_turn_model`\n- `default_config`\n- `__init__`\n- `default_config`\n- `default_config`\n- `default_config`\n- `default_config`\n- ...and 16 more","member_count":26,"key_symbols":["__init__","sample_light_position","perturb_orientation","get_assets","__init__"]},{"label":"obs_onnx","summary":"## Module: Obs Onnx\n\nThis module contains **22 symbols** with a cohesion score of **9%** and **11 external connections**.\n\n### Types\n\n- `OnnxController`\n- `OnnxController`\n- `OnnxController`\n\n### Functions\n\n- `load_callback`\n- `load_callback`\n- `get_obs`\n- `get_obs`\n- `__init__`\n- `__init__`\n- `__init__`\n- `get_assets`\n- `_connect_device`\n- `get_obs`\n- ...and 9 more","member_count":22,"key_symbols":["progress","OnnxController","__init__","get_obs","load_callback"]},{"label":"cost_vel_2","summary":"## Module: Cost Vel 2\n\nThis module contains **22 symbols** with a cohesion score of **14%** and **2 external connections**.\n\n### Functions\n\n- `_get_localrpyrate`\n- `step`\n- `_cost_stand_still`\n- `_reward_tracking_lin_vel`\n- `_get_reward`\n- `_cost_feet_clearance`\n- `_get_sensor_data`\n- `_get_obs`\n- `sample_command`\n- `_cost_action_rate`\n- ...and 12 more","member_count":22,"key_symbols":["sample_command","reset","step","_get_obs","_get_gravity"]},{"label":"cost_vel_3","summary":"## Module: Cost Vel 3\n\nThis module contains **20 symbols** with a cohesion score of **12%** and **4 external connections**.\n\n### Functions\n\n- `_get_localrpyrate`\n- `_cost_action_rate`\n- `_get_obs`\n- `_cost_ang_vel_xy`\n- `gen_dir`\n- `_reward_feet_air_time`\n- `_cost_stand_still`\n- `_get_gravity`\n- `_maybe_apply_perturbation`\n- `_cost_termination`\n- ...and 10 more","member_count":20,"key_symbols":["sample_command","step","_get_obs","_get_gravity","_get_localrpyrate"]},{"label":"randomize_rand","summary":"## Module: Randomize Rand\n\nThis module contains **19 symbols** with a cohesion score of **8%** and **19 external connections**.\n\n### Types\n\n- `OnnxController`\n\n### Functions\n\n- `domain_randomize`\n- `tree_replace`\n- `qpos_width`\n- `domain_randomize`\n- `_post_init`\n- `get_qvel_ids`\n- `__init__`\n- `default_config`\n- `domain_randomize`\n- `rand`\n- ...and 8 more","member_count":19,"key_symbols":["OnnxController","__init__","default_config","mat_from_dh_revolute","_post_init"]},{"label":"config_post","summary":"## Module: Config Post\n\nThis module contains **18 symbols** with a cohesion score of **13%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `__init__`\n- `task_to_xml`\n- `default_config`\n- `default_config`\n- `_post_init`\n- `default_config`\n- `_post_init`\n- `default_config`\n- `_post_init`\n- ...and 8 more","member_count":18,"key_symbols":["task_to_xml","default_config","__init__","_post_init","default_config"]},{"label":"control_controller","summary":"## Module: Control Controller\n\nThis module contains **14 symbols** with a cohesion score of **10%** and **10 external connections**.\n\n### Types\n\n- `OnnxController`\n- `Gamepad`\n- `OnnxController`\n\n### Functions\n\n- `get_control`\n- `__init__`\n- `default_config`\n- `get_control`\n- `__init__`\n- `_interpolate`\n- `get_control`\n- `get_control`\n- `run`\n- `get_control`\n- ...and 1 more","member_count":14,"key_symbols":["run","get_control","get_control","_interpolate","Gamepad"]},{"label":"callback_load","summary":"## Module: Callback Load\n\nThis module contains **11 symbols** with a cohesion score of **11%** and **20 external connections**.\n\n### Functions\n\n- `__init__`\n- `default_config`\n- `load_callback`\n- `load_callback`\n- `__init__`\n- `modify_model`\n- `_post_init`\n- `compute_franka_fk`\n- `get_qpos_ids`\n- `_make_model`\n- ...and 1 more","member_count":11,"key_symbols":["load_callback","load_callback","load_callback","__init__","_post_init"]},{"label":"post_aloha","summary":"## Module: Post Aloha\n\nThis module contains **7 symbols** with a cohesion score of **33%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `__init__`\n- `_post_init_aloha`\n- `_post_init`\n- `_post_init`\n- `default_config`\n- `default_config`","member_count":7,"key_symbols":["default_config","__init__","_post_init","default_config","__init__"]},{"label":"default_post","summary":"## Module: Default Post\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `default_config`\n- `_post_init`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"post","summary":"## Module: Post\n\nThis module contains **3 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `_post_init`\n- `default_config`\n- `__init__`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"post_2","summary":"## Module: Post 2\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `_post_init`\n- `default_config`\n- `__init__`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"init_post","summary":"## Module: Init Post\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `_post_init`\n- `default_config`\n- `__init__`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"init_post_2","summary":"## Module: Init Post 2\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `default_config`\n- `_post_init`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"init_post_3","summary":"## Module: Init Post 3\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `default_config`\n- `_post_init`\n- `__init__`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"post_3","summary":"## Module: Post 3\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `_post_init`\n- `__init__`\n- `default_config`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"init_post_4","summary":"## Module: Init Post 4\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `default_config`\n- `_post_init`\n- `__init__`","member_count":3,"key_symbols":["default_config","__init__","_post_init"]},{"label":"jnt","summary":"## Module: Jnt\n\nThis module contains **3 symbols** with a cohesion score of **67%** and **0 external connections**.\n\n### Functions\n\n- `_post_init`\n- `jnt_vel_range`\n- `jnt_range`","member_count":3,"key_symbols":["_post_init","jnt_range","jnt_vel_range"]},{"label":"render","summary":"## Module: Render\n\nThis module contains **3 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `render_array`\n- `render`\n- `get_image`","member_count":3,"key_symbols":["render","render_array","get_image"]},{"label":"measurement","summary":"## Module: Measurement\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `MeasurementMode`\n\n### Functions\n\n- `calculate_average_fps`","member_count":2,"key_symbols":["MeasurementMode","calculate_average_fps"]},{"label":"gen","summary":"## Module: Gen\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `gen_dir`\n- `wait`","member_count":2,"key_symbols":["gen_dir","wait"]},{"label":"get_load","summary":"## Module: Get Load\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `get_default_config`\n- `load`","member_count":2,"key_symbols":["get_default_config","load"]},{"label":"step","summary":"## Module: Step\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `step`\n- `single_step`","member_count":2,"key_symbols":["single_step","step"]},{"label":"gen_2","summary":"## Module: Gen 2\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `wait`\n- `gen_dir`","member_count":2,"key_symbols":["gen_dir","wait"]},{"label":"footstand_classes","summary":"## Module: Footstand Classes\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `Handstand`\n- `Footstand`","member_count":2,"key_symbols":["Handstand","Footstand"]},{"label":"panda_classes","summary":"## Module: Panda Classes\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `PandaPickCubeOrientation`\n- `PandaPickCube`","member_count":2,"key_symbols":["PandaPickCube","PandaPickCubeOrientation"]},{"label":"gen_3","summary":"## Module: Gen 3\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `gen_dir`\n- `wait`","member_count":2,"key_symbols":["gen_dir","wait"]},{"label":"reset","summary":"## Module: Reset\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `reset`","member_count":1,"key_symbols":["reset"]},{"label":"step_2","summary":"## Module: Step 2\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `step`","member_count":1,"key_symbols":["step"]},{"label":"group_42","summary":"## Module: Group 42\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `run`","member_count":1,"key_symbols":["run"]},{"label":"render_2","summary":"## Module: Render 2\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `render`","member_count":1,"key_symbols":["render"]},{"label":"randomizer_domain","summary":"## Module: Randomizer Domain\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `get_domain_randomizer`","member_count":1,"key_symbols":["get_domain_randomizer"]},{"label":"config","summary":"## Module: Config\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `get_default_config`","member_count":1,"key_symbols":["get_default_config"]},{"label":"load","summary":"## Module: Load\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `load`","member_count":1,"key_symbols":["load"]}],"patterns":[{"kind":"long_method","severity":"error","message":"'main' is 339 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'main' is 176 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'plot_stacked_bars_seaborn' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 51 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_initialize_metrics' is 54 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'update' is 112 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_plot_metrics' is 72 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 72 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'domain_randomize' is 129 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rand' is 78 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 89 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'step' is 136 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 66 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'compute_franka_ik' is 240 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 73 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'domain_randomize' is 159 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rand' is 84 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'domain_randomize' is 148 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rand' is 77 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 91 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 65 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'_get_obs' is 102 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'domain_randomize' is 147 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rand' is 76 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 75 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_reward' is 73 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_post_init' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 69 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 73 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_reward' is 80 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_single_obs' is 66 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'domain_randomize' is 78 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 67 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_post_init' is 69 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 86 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 76 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 87 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_reward' is 56 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_maybe_apply_perturbation' is 54 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'domain_randomize' is 77 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 75 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'_post_init' is 127 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 85 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 87 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_reward' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'domain_randomize' is 89 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rand_dynamics' is 57 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_post_init' is 56 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 79 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 67 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 64 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 88 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_maybe_apply_perturbation' is 54 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 86 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 84 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_post_init' is 60 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 68 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 58 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 72 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 65 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 59 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'domain_randomize' is 104 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rand_dynamics' is 66 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 68 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_post_init' is 77 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 93 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 97 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 87 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_reward' is 60 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 56 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 54 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'default_config' is 53 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 84 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 87 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_maybe_apply_perturbation' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'reset' is 61 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'step' is 54 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_get_obs' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'test_auto_reset_wrapper' is 54 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'_sigmoids' is 54 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'brax_ppo_config' is 155 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'brax_ppo_config' is 142 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'rsl_rl_config' is 57 lines long","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: get_image → render_array → render → get_image","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 7 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 15 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 17 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 18 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 17 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 20 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 18 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 9 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 11 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 31 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 26 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 34 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 21 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 21 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 30 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 15 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 21 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 30 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 19 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 36 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 33 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 17 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 29 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 21 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 15 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 13 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 17 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 16 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 15 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 18 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 38 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 31 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

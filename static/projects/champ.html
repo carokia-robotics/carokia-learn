@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>champ — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>champ</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **4 files** with **17 symbols** across **314 lines of code**, written in **python**.
+
+The codebase is organized into **5 functional modules** (automatically detected communities) with **5 entry points**.
+
+### Modules at a Glance
+
+- **Publish Odom** — 7 symbols (cohesion: 38%)
+- **Misc** — 5 symbols (cohesion: 0%)
+- **Joints** — 2 symbols (cohesion: 100%)
+- **Sim Classes** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `joints_cmd_callback` — CLI pattern, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers
+- `__init__` — module entry, zero callers</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`joints_cmd_callback`** (Function)</code> — CLI pattern, zero callers, calls others *(score: 1.1)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers *(score: 0.7)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers *(score: 0.7)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **17 symbols** connected by **11 relationships** across **5 modules**.
+
+### Relationship Types
+
+- **11** function calls
+
+### Module Hierarchy
+
+- **Publish Odom** (7 symbols) — includes: `run`, `publish_odom`, `is_almost_equal`
+- **Misc** (5 symbols) — includes: `__init__`, `__init__`, `odometry_callback`
+- **Joints** (2 symbols) — includes: `joints_cmd_callback`, `JointsCalibratorRelay`
+- **Sim Classes** (2 symbols) — includes: `__init__`, `SimPose`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 5 symbols, cohesion 0%
+- **Publish Odom** — 7 symbols, cohesion 38%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 4 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">4</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">314</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">17</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">2.8</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry.py</code></div>
+                <div class="card-meta">complexity: 4.9 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/champ/champ_bringup/scripts/joint_calibrator_relay.py</code></div>
+                <div class="card-meta">complexity: 3.0 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry_tf.py</code></div>
+                <div class="card-meta">complexity: 1.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/champ/champ_gazebo/scripts/imu_sensor.py</code></div>
+                <div class="card-meta">complexity: 1.7 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (5)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">publish_odom</div>
+                        <div class="card-meta">7 symbols</div>
+                        <p>## Module: Publish Odom
+
+This module contains **7 symbols** with a cohesion score of **38%** and **0 external connections**.
+
+### Types
+
+- `ChampOdometry`
+
+### Functions
+
+- `run`
+- `publish_odom`
+- `is_almost_equal`
+- `get_foot_position`
+- `__init__`
+- `publish_odom_tf`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: ChampOdometry, __init__, publish_odom, publish_odom_tf, get_foot_position</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">5 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **5 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Functions
+
+- `__init__`
+- `__init__`
+- `odometry_callback`
+- `odometry_callback`
+- `contacts_callback`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, odometry_callback, contacts_callback, odometry_callback, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">joints</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Joints
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `JointsCalibratorRelay`
+
+### Functions
+
+- `joints_cmd_callback`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: JointsCalibratorRelay, joints_cmd_callback</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">sim_classes</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Sim Classes
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `SimPose`
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: SimPose, __init__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">odom_classes</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Odom Classes
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `Odom`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Odom</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (2)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'run' is 60 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 8 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/champ/champ_bringup/scripts/joint_calibrator_relay.py
+├── /Users/bm/carokia-repos/champ/champ_gazebo/scripts/imu_sensor.py
+├── /Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry.py
+└── /Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry_tf.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 08:56 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"champ","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **4 files** with **17 symbols** across **314 lines of code**, written in **python**.\n\nThe codebase is organized into **5 functional modules** (automatically detected communities) with **5 entry points**.\n\n### Modules at a Glance\n\n- **Publish Odom** — 7 symbols (cohesion: 38%)\n- **Misc** — 5 symbols (cohesion: 0%)\n- **Joints** — 2 symbols (cohesion: 100%)\n- **Sim Classes** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `joints_cmd_callback` — CLI pattern, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers\n- `__init__` — module entry, zero callers","architecture_mermaid":"","reading_order":[{"path":"**`joints_cmd_callback`** (Function)","reason":"CLI pattern, zero callers, calls others *(score: 1.1)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers *(score: 0.7)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers *(score: 0.7)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **17 symbols** connected by **11 relationships** across **5 modules**.\n\n### Relationship Types\n\n- **11** function calls\n\n### Module Hierarchy\n\n- **Publish Odom** (7 symbols) — includes: `run`, `publish_odom`, `is_almost_equal`\n- **Misc** (5 symbols) — includes: `__init__`, `__init__`, `odometry_callback`\n- **Joints** (2 symbols) — includes: `joints_cmd_callback`, `JointsCalibratorRelay`\n- **Sim Classes** (2 symbols) — includes: `__init__`, `SimPose`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 5 symbols, cohesion 0%\n- **Publish Odom** — 7 symbols, cohesion 38%","why_trending":"## Why This Project\n\nThis project is written in python with 4 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":4,"total_sloc":314,"total_symbols":17,"avg_complexity":2.8020833333333335,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry.py","heatmap_score":0.0,"complexity":4.875,"churn":0},{"path":"/Users/bm/carokia-repos/champ/champ_bringup/scripts/joint_calibrator_relay.py","heatmap_score":0.0,"complexity":3.0,"churn":0},{"path":"/Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry_tf.py","heatmap_score":0.0,"complexity":1.6666666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/champ/champ_gazebo/scripts/imu_sensor.py","heatmap_score":0.0,"complexity":1.6666666666666667,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/champ/champ_bringup/scripts/joint_calibrator_relay.py\n├── /Users/bm/carokia-repos/champ/champ_gazebo/scripts/imu_sensor.py\n├── /Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry.py\n└── /Users/bm/carokia-repos/champ/champ_gazebo/scripts/odometry_tf.py","communities":[{"label":"publish_odom","summary":"## Module: Publish Odom\n\nThis module contains **7 symbols** with a cohesion score of **38%** and **0 external connections**.\n\n### Types\n\n- `ChampOdometry`\n\n### Functions\n\n- `run`\n- `publish_odom`\n- `is_almost_equal`\n- `get_foot_position`\n- `__init__`\n- `publish_odom_tf`","member_count":7,"key_symbols":["ChampOdometry","__init__","publish_odom","publish_odom_tf","get_foot_position"]},{"label":"misc","summary":"## Module: Misc\n\nThis module contains **5 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Functions\n\n- `__init__`\n- `__init__`\n- `odometry_callback`\n- `odometry_callback`\n- `contacts_callback`","member_count":5,"key_symbols":["__init__","odometry_callback","contacts_callback","odometry_callback","__init__"]},{"label":"joints","summary":"## Module: Joints\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `JointsCalibratorRelay`\n\n### Functions\n\n- `joints_cmd_callback`","member_count":2,"key_symbols":["JointsCalibratorRelay","joints_cmd_callback"]},{"label":"sim_classes","summary":"## Module: Sim Classes\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `SimPose`\n\n### Functions\n\n- `__init__`","member_count":2,"key_symbols":["SimPose","__init__"]},{"label":"odom_classes","summary":"## Module: Odom Classes\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `Odom`","member_count":1,"key_symbols":["Odom"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'run' is 60 lines long","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 8 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

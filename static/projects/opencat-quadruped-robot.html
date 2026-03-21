@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenCat-Quadruped-Robot — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>OpenCat-Quadruped-Robot</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **26 files** with **257 symbols** across **11234 lines of code**, written in **python**.
+
+The codebase is organized into **16 functional modules** (automatically detected communities) with **30 entry points**.
+
+### Modules at a Glance
+
+- **Angle Cmd** — 35 symbols (cohesion: 14%)
+- **Select Change** — 32 symbols (cohesion: 16%)
+- **Text Menu** — 29 symbols (cohesion: 31%)
+- **Misc** — 25 symbols (cohesion: 0%)
+- **Close Calib** — 24 symbols (cohesion: 9%)
+- **Mode Active** — 24 symbols (cohesion: 33%)
+- **Button Frame** — 22 symbols (cohesion: 21%)
+- **Close Monitoring** — 20 symbols (cohesion: 14%)
+- **Serial Byte** — 15 symbols (cohesion: 13%)
+- **File Connect** — 15 symbols (cohesion: 19%)
+- **Raspberry Model** — 8 symbols (cohesion: 42%)
+- **Read Receive** — 2 symbols (cohesion: 100%)
+- **Receive** — 2 symbols (cohesion: 100%)
+- **Make Directory** — 2 symbols (cohesion: 100%)
+
+### Key Entry Points
+
+- `sendCmdStr` — CLI pattern, zero callers, calls others
+- `sendCmd` — CLI pattern, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`sendCmdStr`** (Function)</code> — CLI pattern, zero callers, calls others *(score: 1.1)*</li>
+            
+                <li><code>**`sendCmd`** (Function)</code> — CLI pattern, zero callers, calls others *(score: 1.1)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **257 symbols** connected by **902 relationships** across **16 modules**.
+
+### Relationship Types
+
+- **901** function calls
+- **1** import dependencies
+
+### Module Hierarchy
+
+- **Angle Cmd** (35 symbols) — includes: `generateMirrorFrame`, `loadSkill`, `popEyeColor`
+- **Select Change** (32 symbols) — includes: `showAbout`, `manualSelect`, `createMenu`
+- **Text Menu** (29 symbols) — includes: `popImport`, `saveID`, `updateRadio`
+- **Misc** (25 symbols) — includes: `Open_Engine`, `Read_Line`, `on_closing`
+- **Close Calib** (24 symbols) — includes: `closeCalib`, `play`, `printH`
+- **Mode Active** (24 symbols) — includes: `uploadeModeOnly`, `factoryReset`, `encode`
+- **Button Frame** (22 symbols) — includes: `createSkillEditor`, `delFrame`, `updateButtonCommand`
+- **Close Monitoring** (20 symbols) — includes: `monitoringVoltage`, `closeSerialBehavior`, `Close_Engine`
+- **Serial Byte** (15 symbols) — includes: `open_dir`, `autoupload`, `txt`
+- **File Connect** (15 symbols) — includes: `printH`, `file_name`, `connectPort`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `txt` (Function) — used by 128 other symbols
+- `send` (Function) — used by 80 other symbols
+- `txt` (Function) — used by 79 other symbols
+- `getWidget` (Function) — used by 54 other symbols
+- `txt` (Function) — used by 33 other symbols
+- `tip` (Function) — used by 31 other symbols
+- `Print_Used_Com` (Function) — used by 24 other symbols
+- `txt` (Function) — used by 18 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 25 symbols, cohesion 0%
+- **Close Calib** — 24 symbols, cohesion 9%
+- **Serial Byte** — 15 symbols, cohesion 13%
+- **Angle Cmd** — 35 symbols, cohesion 14%
+- **Close Monitoring** — 20 symbols, cohesion 14%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 26 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">26</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">11234</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">257</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">5.5</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Calibrator.py</code></div>
+                <div class="card-meta">complexity: 29.3 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/FirmwareUploader.py</code></div>
+                <div class="card-meta">complexity: 24.1 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/SkillComposer.py</code></div>
+                <div class="card-meta">complexity: 18.8 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/ardSerial.py</code></div>
+                <div class="card-meta">complexity: 9.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/ardSerial.py</code></div>
+                <div class="card-meta">complexity: 9.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Debugger.py</code></div>
+                <div class="card-meta">complexity: 7.5 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/UI.py</code></div>
+                <div class="card-meta">complexity: 5.4 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/SerialCommunication.py</code></div>
+                <div class="card-meta">complexity: 5.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/SerialCommunication.py</code></div>
+                <div class="card-meta">complexity: 5.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/robot.py</code></div>
+                <div class="card-meta">complexity: 4.8 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (16)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">angle_cmd</div>
+                        <div class="card-meta">35 symbols</div>
+                        <p>## Module: Angle Cmd
+
+This module contains **35 symbols** with a cohesion score of **14%** and **46 external connections**.
+
+### Functions
+
+- `generateMirrorFrame`
+- `loadSkill`
+- `popEyeColor`
+- `updateSliders`
+- `schedulerToSkill`
+- `monitoringJoint`
+- `sendCmd`
+- `setPose`
+- `changeColor`
+- `changeEffect`
+- ...and 25 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: send, keepReadingInput, schedulerToSkill, monitoringVoltage, monitoringDistance</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">select_change</div>
+                        <div class="card-meta">32 symbols</div>
+                        <p>## Module: Select Change
+
+This module contains **32 symbols** with a cohesion score of **16%** and **32 external connections**.
+
+### Functions
+
+- `showAbout`
+- `manualSelect`
+- `createMenu`
+- `updatePostureTable`
+- `changeModel`
+- `refreshBox`
+- `__init__`
+- `changeLan`
+- `encode`
+- `Print_Used_Com`
+- ...and 22 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Print_Used_Com, txt, updatePostureTable, deleteDuplicatedUsbSerial, checkPortList</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">text_menu</div>
+                        <div class="card-meta">29 symbols</div>
+                        <p>## Module: Text Menu
+
+This module contains **29 symbols** with a cohesion score of **31%** and **53 external connections**.
+
+### Functions
+
+- `popImport`
+- `saveID`
+- `updateRadio`
+- `createController`
+- `chooseProduct`
+- `unbindAll`
+- `updatePortMenu`
+- `getCreatorInfo`
+- `stop`
+- `createMenu`
+- ...and 19 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: txt, rgbtohex, __init__, createMenu, createController</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">25 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **25 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `Communication`
+
+### Functions
+
+- `Open_Engine`
+- `Read_Line`
+- `on_closing`
+- `on_closing`
+- `Print_Name`
+- `scheduler`
+- `on_closing`
+- `Send_data`
+- `absValList`
+- `showAbout`
+- ...and 14 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __init__, Print_Name, Open_Engine, Read_Line, on_closing</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">close_calib</div>
+                        <div class="card-meta">24 symbols</div>
+                        <p>## Module: Close Calib
+
+This module contains **24 symbols** with a cohesion score of **9%** and **40 external connections**.
+
+### Types
+
+- `SkillComposer`
+- `Tuner`
+
+### Functions
+
+- `closeCalib`
+- `play`
+- `printH`
+- `placeProductImage`
+- `sendTaskParallel`
+- `buttDialAct`
+- `on_closing`
+- `splitTaskForLargeAngles`
+- `deacGyrp`
+- `getValue`
+- ...and 12 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: printH, sendTaskParallel, splitTaskForLargeAngles, closeAllSerial, rotateJoints</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">mode_active</div>
+                        <div class="card-meta">24 symbols</div>
+                        <p>## Module: Mode Active
+
+This module contains **24 symbols** with a cohesion score of **33%** and **42 external connections**.
+
+### Functions
+
+- `uploadeModeOnly`
+- `factoryReset`
+- `encode`
+- `setActiveMode`
+- `WriteInstinctPrompts`
+- `upgrade`
+- `on_closing`
+- `buildMenu`
+- `__init__`
+- `force_focus`
+- ...and 14 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: uploadFirmware, txt, __init__, buildMenu, initWidgets</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">button_frame</div>
+                        <div class="card-meta">22 symbols</div>
+                        <p>## Module: Button Frame
+
+This module contains **22 symbols** with a cohesion score of **21%** and **84 external connections**.
+
+### Functions
+
+- `createSkillEditor`
+- `delFrame`
+- `updateButtonCommand`
+- `changeRadioColor`
+- `loadSkill`
+- `setFrame`
+- `setDelay`
+- `imuCali`
+- `showDialog`
+- `changeButtonState`
+- ...and 12 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: createSkillEditor, addFrame, delFrame, getWidget, updateButtonCommand</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">close_monitoring</div>
+                        <div class="card-meta">20 symbols</div>
+                        <p>## Module: Close Monitoring
+
+This module contains **20 symbols** with a cohesion score of **14%** and **12 external connections**.
+
+### Functions
+
+- `monitoringVoltage`
+- `closeSerialBehavior`
+- `Close_Engine`
+- `keepReadingInput`
+- `printH`
+- `read_MCU_loop`
+- `monitoringDistance`
+- `closeAllSerial`
+- `schedulerToSkill`
+- `monitoringJoint`
+- ...and 10 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Close_Engine, closeSerialBehavior, printH, serialWriteNumToByte, printSerialMessage</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">serial_byte</div>
+                        <div class="card-meta">15 symbols</div>
+                        <p>## Module: Serial Byte
+
+This module contains **15 symbols** with a cohesion score of **13%** and **45 external connections**.
+
+### Types
+
+- `UI`
+
+### Functions
+
+- `open_dir`
+- `autoupload`
+- `txt`
+- `saveConfigToFile`
+- `encode`
+- `Send_data`
+- `displayName`
+- `showBootPrompt`
+- `on_closing`
+- `printSerialMessage`
+- ...and 4 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Send_data, encode, serialWriteNumToByte, serialWriteByte, printSerialMessage</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">file_connect</div>
+                        <div class="card-meta">15 symbols</div>
+                        <p>## Module: File Connect
+
+This module contains **15 symbols** with a cohesion score of **19%** and **16 external connections**.
+
+### Types
+
+- `Debugger`
+- `Uploader`
+- `Calibrator`
+
+### Functions
+
+- `printH`
+- `file_name`
+- `connectPort`
+- `creatSkillFile`
+- `testPort`
+- `showSerialPorts`
+- `saveConfigToFile`
+- `makeDirectory`
+- `utility`
+- `printSkillFileName`
+- ...and 2 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: testPort, showSerialPorts, connectPort, printH, makeDirectory</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">raspberry_model</div>
+                        <div class="card-meta">8 symbols</div>
+                        <p>## Module: Raspberry Model
+
+This module contains **8 symbols** with a cohesion score of **42%** and **12 external connections**.
+
+### Types
+
+- `Communication`
+
+### Functions
+
+- `bCallback`
+- `get_raspberry_pi_model`
+- `get_raspberry_pi_model`
+- `checkPortList`
+- `getModelAndVersion`
+- `keepCheckingPort`
+- `connectPort`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Communication, getModelAndVersion, get_raspberry_pi_model, bCallback, checkPortList</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">read_receive</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Read Receive
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `Receive_data`
+- `Read_Size`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Read_Size, Receive_data</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">receive</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Receive
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `Receive_data`
+- `Read_Size`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: Read_Size, Receive_data</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">make_directory</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Make Directory
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `createImage`
+- `makeDirectory`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: makeDirectory, createImage</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">color_change</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Color Change
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `change_color`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: change_color</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">encode</div>
+                        <div class="card-meta">1 symbols</div>
+                        <p>## Module: Encode
+
+This module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `encode`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: encode</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (50)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'serialWriteNumToByte' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'schedulerToSkill' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'replug' is 99 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'countdown' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'__init__' is 159 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'createController' is 240 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'createSkillEditor' is 58 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'changeLan' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'addFrame' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'loadSkillDataText' is 123 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'loadSkill' is 111 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'loadSkillDataTextMul' is 70 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'popEyeColor' is 54 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'export' is 205 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'setAngle' is 105 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'set6Axis' is 83 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'dial' is 80 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 76 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 62 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'getButtonClick' is 81 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'__init__' is 251 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'calibFun' is 92 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 78 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__init__' is 75 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'initWidgets' is 212 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'checkPortsMainThread' is 141 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'updatePort' is 77 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'WriteInstinctPrompts' is 165 lines long</p>
+                    </div>
+                
+                    <div class="card severity-error">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">error &middot; <code></code></div>
+                        <p>'autoupload' is 267 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'serialWriteNumToByte' is 82 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'schedulerToSkill' is 69 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'replug' is 99 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'countdown' is 63 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'manualSelect' is 59 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: delFrame → updateButtonCommand → addFrame → restartSkillEditor → delFrame</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: changeLan → createMenu → changeLan</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: loadSkill → select → loadSkill</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: changeLan → createMenu → changeLan</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">circular_dependency</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>Circular: changeLan → createMenu → changeLan</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 35 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 28 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 69 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 12 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 14 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 27 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 10 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 35 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/SerialCommunication.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/__init__.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/ardSerial.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/config.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/robot.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/ardSerialExample.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/petoiRobotExample.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Calibrator.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Debugger.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/FirmwareUploader.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/RgbLED.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/SkillComposer.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/TunerMu.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/UI.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/commonVar.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/translate.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/SerialCommunication.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/allSkills.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/ardSerial.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/config.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/BittleHitKeyboard.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/climbCeiling.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/hlw.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/moveBySteps.py
+├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/example.py
+└── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/testSkills.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 08:56 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"OpenCat-Quadruped-Robot","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **26 files** with **257 symbols** across **11234 lines of code**, written in **python**.\n\nThe codebase is organized into **16 functional modules** (automatically detected communities) with **30 entry points**.\n\n### Modules at a Glance\n\n- **Angle Cmd** — 35 symbols (cohesion: 14%)\n- **Select Change** — 32 symbols (cohesion: 16%)\n- **Text Menu** — 29 symbols (cohesion: 31%)\n- **Misc** — 25 symbols (cohesion: 0%)\n- **Close Calib** — 24 symbols (cohesion: 9%)\n- **Mode Active** — 24 symbols (cohesion: 33%)\n- **Button Frame** — 22 symbols (cohesion: 21%)\n- **Close Monitoring** — 20 symbols (cohesion: 14%)\n- **Serial Byte** — 15 symbols (cohesion: 13%)\n- **File Connect** — 15 symbols (cohesion: 19%)\n- **Raspberry Model** — 8 symbols (cohesion: 42%)\n- **Read Receive** — 2 symbols (cohesion: 100%)\n- **Receive** — 2 symbols (cohesion: 100%)\n- **Make Directory** — 2 symbols (cohesion: 100%)\n\n### Key Entry Points\n\n- `sendCmdStr` — CLI pattern, zero callers, calls others\n- `sendCmd` — CLI pattern, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others","architecture_mermaid":"","reading_order":[{"path":"**`sendCmdStr`** (Function)","reason":"CLI pattern, zero callers, calls others *(score: 1.1)*","language":""},{"path":"**`sendCmd`** (Function)","reason":"CLI pattern, zero callers, calls others *(score: 1.1)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **257 symbols** connected by **902 relationships** across **16 modules**.\n\n### Relationship Types\n\n- **901** function calls\n- **1** import dependencies\n\n### Module Hierarchy\n\n- **Angle Cmd** (35 symbols) — includes: `generateMirrorFrame`, `loadSkill`, `popEyeColor`\n- **Select Change** (32 symbols) — includes: `showAbout`, `manualSelect`, `createMenu`\n- **Text Menu** (29 symbols) — includes: `popImport`, `saveID`, `updateRadio`\n- **Misc** (25 symbols) — includes: `Open_Engine`, `Read_Line`, `on_closing`\n- **Close Calib** (24 symbols) — includes: `closeCalib`, `play`, `printH`\n- **Mode Active** (24 symbols) — includes: `uploadeModeOnly`, `factoryReset`, `encode`\n- **Button Frame** (22 symbols) — includes: `createSkillEditor`, `delFrame`, `updateButtonCommand`\n- **Close Monitoring** (20 symbols) — includes: `monitoringVoltage`, `closeSerialBehavior`, `Close_Engine`\n- **Serial Byte** (15 symbols) — includes: `open_dir`, `autoupload`, `txt`\n- **File Connect** (15 symbols) — includes: `printH`, `file_name`, `connectPort`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `txt` (Function) — used by 128 other symbols\n- `send` (Function) — used by 80 other symbols\n- `txt` (Function) — used by 79 other symbols\n- `getWidget` (Function) — used by 54 other symbols\n- `txt` (Function) — used by 33 other symbols\n- `tip` (Function) — used by 31 other symbols\n- `Print_Used_Com` (Function) — used by 24 other symbols\n- `txt` (Function) — used by 18 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 25 symbols, cohesion 0%\n- **Close Calib** — 24 symbols, cohesion 9%\n- **Serial Byte** — 15 symbols, cohesion 13%\n- **Angle Cmd** — 35 symbols, cohesion 14%\n- **Close Monitoring** — 20 symbols, cohesion 14%","why_trending":"## Why This Project\n\nThis project is written in python with 26 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":26,"total_sloc":11234,"total_symbols":257,"avg_complexity":5.450140680575464,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Calibrator.py","heatmap_score":0.0,"complexity":29.333333333333332,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/FirmwareUploader.py","heatmap_score":0.0,"complexity":24.11111111111111,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/SkillComposer.py","heatmap_score":0.0,"complexity":18.81159420289855,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/ardSerial.py","heatmap_score":0.0,"complexity":9.714285714285714,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/ardSerial.py","heatmap_score":0.0,"complexity":9.714285714285714,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Debugger.py","heatmap_score":0.0,"complexity":7.5,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/UI.py","heatmap_score":0.0,"complexity":5.416666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/SerialCommunication.py","heatmap_score":0.0,"complexity":5.2,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/SerialCommunication.py","heatmap_score":0.0,"complexity":5.2,"churn":0},{"path":"/Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/robot.py","heatmap_score":0.0,"complexity":4.785714285714286,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/SerialCommunication.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/__init__.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/ardSerial.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/config.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/PetoiRobot/robot.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/ardSerialExample.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/OpenCatPythonAPI/petoiRobotExample.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Calibrator.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/Debugger.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/FirmwareUploader.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/RgbLED.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/SkillComposer.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/TunerMu.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/UI.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/commonVar.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/pyUI/translate.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/SerialCommunication.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/allSkills.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/ardSerial.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/config.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/BittleHitKeyboard.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/climbCeiling.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/hlw.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/demos/moveBySteps.py\n├── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/example.py\n└── /Users/bm/carokia-repos/OpenCat-Quadruped-Robot/serialMaster/testSkills.py","communities":[{"label":"angle_cmd","summary":"## Module: Angle Cmd\n\nThis module contains **35 symbols** with a cohesion score of **14%** and **46 external connections**.\n\n### Functions\n\n- `generateMirrorFrame`\n- `loadSkill`\n- `popEyeColor`\n- `updateSliders`\n- `schedulerToSkill`\n- `monitoringJoint`\n- `sendCmd`\n- `setPose`\n- `changeColor`\n- `changeEffect`\n- ...and 25 more","member_count":35,"key_symbols":["send","keepReadingInput","schedulerToSkill","monitoringVoltage","monitoringDistance"]},{"label":"select_change","summary":"## Module: Select Change\n\nThis module contains **32 symbols** with a cohesion score of **16%** and **32 external connections**.\n\n### Functions\n\n- `showAbout`\n- `manualSelect`\n- `createMenu`\n- `updatePostureTable`\n- `changeModel`\n- `refreshBox`\n- `__init__`\n- `changeLan`\n- `encode`\n- `Print_Used_Com`\n- ...and 22 more","member_count":32,"key_symbols":["Print_Used_Com","txt","updatePostureTable","deleteDuplicatedUsbSerial","checkPortList"]},{"label":"text_menu","summary":"## Module: Text Menu\n\nThis module contains **29 symbols** with a cohesion score of **31%** and **53 external connections**.\n\n### Functions\n\n- `popImport`\n- `saveID`\n- `updateRadio`\n- `createController`\n- `chooseProduct`\n- `unbindAll`\n- `updatePortMenu`\n- `getCreatorInfo`\n- `stop`\n- `createMenu`\n- ...and 19 more","member_count":29,"key_symbols":["txt","rgbtohex","__init__","createMenu","createController"]},{"label":"misc","summary":"## Module: Misc\n\nThis module contains **25 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `Communication`\n\n### Functions\n\n- `Open_Engine`\n- `Read_Line`\n- `on_closing`\n- `on_closing`\n- `Print_Name`\n- `scheduler`\n- `on_closing`\n- `Send_data`\n- `absValList`\n- `showAbout`\n- ...and 14 more","member_count":25,"key_symbols":["__init__","Print_Name","Open_Engine","Read_Line","on_closing"]},{"label":"close_calib","summary":"## Module: Close Calib\n\nThis module contains **24 symbols** with a cohesion score of **9%** and **40 external connections**.\n\n### Types\n\n- `SkillComposer`\n- `Tuner`\n\n### Functions\n\n- `closeCalib`\n- `play`\n- `printH`\n- `placeProductImage`\n- `sendTaskParallel`\n- `buttDialAct`\n- `on_closing`\n- `splitTaskForLargeAngles`\n- `deacGyrp`\n- `getValue`\n- ...and 12 more","member_count":24,"key_symbols":["printH","sendTaskParallel","splitTaskForLargeAngles","closeAllSerial","rotateJoints"]},{"label":"mode_active","summary":"## Module: Mode Active\n\nThis module contains **24 symbols** with a cohesion score of **33%** and **42 external connections**.\n\n### Functions\n\n- `uploadeModeOnly`\n- `factoryReset`\n- `encode`\n- `setActiveMode`\n- `WriteInstinctPrompts`\n- `upgrade`\n- `on_closing`\n- `buildMenu`\n- `__init__`\n- `force_focus`\n- ...and 14 more","member_count":24,"key_symbols":["uploadFirmware","txt","__init__","buildMenu","initWidgets"]},{"label":"button_frame","summary":"## Module: Button Frame\n\nThis module contains **22 symbols** with a cohesion score of **21%** and **84 external connections**.\n\n### Functions\n\n- `createSkillEditor`\n- `delFrame`\n- `updateButtonCommand`\n- `changeRadioColor`\n- `loadSkill`\n- `setFrame`\n- `setDelay`\n- `imuCali`\n- `showDialog`\n- `changeButtonState`\n- ...and 12 more","member_count":22,"key_symbols":["createSkillEditor","addFrame","delFrame","getWidget","updateButtonCommand"]},{"label":"close_monitoring","summary":"## Module: Close Monitoring\n\nThis module contains **20 symbols** with a cohesion score of **14%** and **12 external connections**.\n\n### Functions\n\n- `monitoringVoltage`\n- `closeSerialBehavior`\n- `Close_Engine`\n- `keepReadingInput`\n- `printH`\n- `read_MCU_loop`\n- `monitoringDistance`\n- `closeAllSerial`\n- `schedulerToSkill`\n- `monitoringJoint`\n- ...and 10 more","member_count":20,"key_symbols":["Close_Engine","closeSerialBehavior","printH","serialWriteNumToByte","printSerialMessage"]},{"label":"serial_byte","summary":"## Module: Serial Byte\n\nThis module contains **15 symbols** with a cohesion score of **13%** and **45 external connections**.\n\n### Types\n\n- `UI`\n\n### Functions\n\n- `open_dir`\n- `autoupload`\n- `txt`\n- `saveConfigToFile`\n- `encode`\n- `Send_data`\n- `displayName`\n- `showBootPrompt`\n- `on_closing`\n- `printSerialMessage`\n- ...and 4 more","member_count":15,"key_symbols":["Send_data","encode","serialWriteNumToByte","serialWriteByte","printSerialMessage"]},{"label":"file_connect","summary":"## Module: File Connect\n\nThis module contains **15 symbols** with a cohesion score of **19%** and **16 external connections**.\n\n### Types\n\n- `Debugger`\n- `Uploader`\n- `Calibrator`\n\n### Functions\n\n- `printH`\n- `file_name`\n- `connectPort`\n- `creatSkillFile`\n- `testPort`\n- `showSerialPorts`\n- `saveConfigToFile`\n- `makeDirectory`\n- `utility`\n- `printSkillFileName`\n- ...and 2 more","member_count":15,"key_symbols":["testPort","showSerialPorts","connectPort","printH","makeDirectory"]},{"label":"raspberry_model","summary":"## Module: Raspberry Model\n\nThis module contains **8 symbols** with a cohesion score of **42%** and **12 external connections**.\n\n### Types\n\n- `Communication`\n\n### Functions\n\n- `bCallback`\n- `get_raspberry_pi_model`\n- `get_raspberry_pi_model`\n- `checkPortList`\n- `getModelAndVersion`\n- `keepCheckingPort`\n- `connectPort`","member_count":8,"key_symbols":["Communication","getModelAndVersion","get_raspberry_pi_model","bCallback","checkPortList"]},{"label":"read_receive","summary":"## Module: Read Receive\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `Receive_data`\n- `Read_Size`","member_count":2,"key_symbols":["Read_Size","Receive_data"]},{"label":"receive","summary":"## Module: Receive\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `Receive_data`\n- `Read_Size`","member_count":2,"key_symbols":["Read_Size","Receive_data"]},{"label":"make_directory","summary":"## Module: Make Directory\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `createImage`\n- `makeDirectory`","member_count":2,"key_symbols":["makeDirectory","createImage"]},{"label":"color_change","summary":"## Module: Color Change\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `change_color`","member_count":1,"key_symbols":["change_color"]},{"label":"encode","summary":"## Module: Encode\n\nThis module contains **1 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `encode`","member_count":1,"key_symbols":["encode"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'serialWriteNumToByte' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'schedulerToSkill' is 69 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'replug' is 99 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'countdown' is 63 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'__init__' is 159 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'createController' is 240 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'createSkillEditor' is 58 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'changeLan' is 75 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'addFrame' is 75 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'loadSkillDataText' is 123 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'loadSkill' is 111 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'loadSkillDataTextMul' is 70 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'popEyeColor' is 54 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'export' is 205 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'setAngle' is 105 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'set6Axis' is 83 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'dial' is 80 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 76 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 62 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'getButtonClick' is 81 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'__init__' is 251 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'calibFun' is 92 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 78 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__init__' is 75 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'initWidgets' is 212 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'checkPortsMainThread' is 141 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'updatePort' is 77 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'WriteInstinctPrompts' is 165 lines long","file_path":""},{"kind":"long_method","severity":"error","message":"'autoupload' is 267 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'serialWriteNumToByte' is 82 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'schedulerToSkill' is 69 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'replug' is 99 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'countdown' is 63 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'manualSelect' is 59 lines long","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: delFrame → updateButtonCommand → addFrame → restartSkillEditor → delFrame","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: changeLan → createMenu → changeLan","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: loadSkill → select → loadSkill","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: changeLan → createMenu → changeLan","file_path":""},{"kind":"circular_dependency","severity":"warning","message":"Circular: changeLan → createMenu → changeLan","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 35 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 28 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 69 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 12 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 14 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 27 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 10 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 35 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

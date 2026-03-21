@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>open_x_embodiment — Codeilus</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #0d1117; color: #c9d1d9; line-height: 1.6;
+            max-width: 960px; margin: 0 auto; padding: 1.5rem;
+        }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
+        h3 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+        p, li { font-size: 0.9rem; }
+        code { background: #161b22; padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.85em; }
+        pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.85rem; line-height: 1.5; }
+
+        /* Header */
+        .hero { text-align: center; padding: 2rem 0 1.5rem; border-bottom: 1px solid #21262d; margin-bottom: 2rem; }
+        .hero .desc { color: #8b949e; margin: 0.5rem 0 1rem; }
+        .badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; background: #21262d; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Nav */
+        nav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #21262d; padding: 0.5rem 0; margin-bottom: 1.5rem; z-index: 10; overflow-x: auto; white-space: nowrap; }
+        nav a { display: inline-block; padding: 0.3rem 0.75rem; color: #8b949e; font-size: 0.8rem; border-radius: 4px; }
+        nav a:hover { color: #f0f6fc; background: #161b22; text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+
+        /* Cards */
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .card-title { color: #f0f6fc; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-meta { font-size: 0.75rem; color: #8b949e; }
+
+        /* Metrics grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #58a6ff; }
+        .metric-label { font-size: 0.75rem; color: #8b949e; }
+
+        /* Collapsible */
+        details { margin-bottom: 0.75rem; }
+        summary { cursor: pointer; font-weight: 600; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 0.9rem; color: #f0f6fc; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶ "; font-size: 0.7rem; color: #8b949e; }
+        details[open] summary::before { content: "▼ "; }
+        details .content { padding: 1rem; background: #0d1117; border: 1px solid #30363d; border-top: none; border-radius: 0 0 6px 6px; }
+
+        /* Reading order numbered list */
+        .reading-list { list-style: none; counter-reset: reading; }
+        .reading-list li { counter-increment: reading; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 0.5rem; }
+        .reading-list li::before { content: counter(reading) "."; font-weight: 700; color: #58a6ff; margin-right: 0.5rem; }
+
+        /* Patterns */
+        .severity-error { border-left: 3px solid #f85149; }
+        .severity-warning { border-left: 3px solid #d29922; }
+        .severity-info { border-left: 3px solid #58a6ff; }
+
+        /* Mermaid */
+        .mermaid { background: #161b22; padding: 1rem; border-radius: 6px; text-align: center; overflow-x: auto; }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            nav, .badges { display: none; }
+            .hero { border: none; }
+            h1, h2, h3, .card-title, .metric-value { color: #000; }
+            .card, .metric-box, summary, details .content, pre { background: #f6f8fa; border-color: #d0d7de; }
+            a { color: #0969da; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <header class="hero">
+        <h1>open_x_embodiment</h1>
+        
+        <div class="badges">
+        
+            <span class="badge"><span class="badge-dot" style="background:#3572A5"></span> python 100.0%</span>
+        
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#key-files">Key Files</a>
+        <a href="#entry-points">Entry Points</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#how-to-extend">Extend</a>
+        <a href="#how-to-contribute">Contribute</a>
+        <a href="#why-trending">Why Trending</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#deep-dive">Deep Dive</a>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview">
+            <h2>30-Second Overview</h2>
+            <div class="card">## Project Overview
+
+This project contains **5 files** with **50 symbols** across **1253 lines of code**, written in **python**.
+
+The codebase is organized into **6 functional modules** (automatically detected communities) with **9 entry points**.
+
+### Modules at a Glance
+
+- **Action Film Classes** — 19 symbols (cohesion: 13%)
+- **Misc** — 15 symbols (cohesion: 0%)
+- **Round Repeats Classes** — 10 symbols (cohesion: 47%)
+- **Run Action** — 2 symbols (cohesion: 100%)
+- **Setup Classes** — 2 symbols (cohesion: 100%)
+- **Init Config Classes** — 2 symbols (cohesion: 700%)
+
+### Key Entry Points
+
+- `main` — main function, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers, calls others
+- `__init__` — module entry, zero callers
+- `_run_action_inference` — zero callers, calls others</div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <h2>Architecture</h2>
+            
+            <p style="color:#8b949e">Architecture diagram not yet generated.</p>
+            
+        </section>
+
+        <!-- Key Files -->
+        <section id="key-files">
+            <h2>Key Files to Read</h2>
+            
+            <ol class="reading-list">
+            
+                <li><code>**`main`** (Function)</code> — main function, zero callers, calls others *(score: 1.5)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers, calls others *(score: 1.0)*</li>
+            
+                <li><code>**`__init__`** (Function)</code> — module entry, zero callers *(score: 0.7)*</li>
+            
+                <li><code>**`_run_action_inference`** (Function)</code> — zero callers, calls others *(score: 0.5)*</li>
+            
+                <li><code>**`__call__`** (Function)</code> — zero callers, calls others *(score: 0.5)*</li>
+            
+                <li><code>**`__call__`** (Function)</code> — zero callers, calls others *(score: 0.5)*</li>
+            
+                <li><code>**`setup`** (Function)</code> — zero callers, calls others *(score: 0.5)*</li>
+            
+            </ol>
+            
+        </section>
+
+        <!-- Entry Points -->
+        <section id="entry-points">
+            <h2>Entry Points</h2>
+            
+            <p style="color:#8b949e">No entry points detected yet.</p>
+            
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="card">## Architecture
+
+The codebase consists of **50 symbols** connected by **54 relationships** across **6 modules**.
+
+### Relationship Types
+
+- **49** function calls
+- **5** import dependencies
+
+### Module Hierarchy
+
+- **Action Film Classes** (19 symbols) — includes: `EfficientNetWithFilm`, `action`, `FilmConditioning`
+- **Misc** (15 symbols) — includes: `__call__`, `__init__`, `__call__`
+- **Round Repeats Classes** (10 symbols) — includes: `round_repeats`, `SqueezeExcite`, `stochastic_depth`
+- **Run Action** (2 symbols) — includes: `detokenize_action`, `_run_action_inference`
+- **Setup Classes** (2 symbols) — includes: `ImageTokenizer`, `setup`
+- **Init Config Classes** (2 symbols) — includes: `__init__`, `BlockConfig`</div>
+        </section>
+
+        <!-- How to Extend -->
+        <section id="how-to-extend">
+            <h2>How to Extend</h2>
+            <div class="card">## Extension Guide
+
+To extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.
+
+### Key Extension Points (high fan-in)
+
+- `conv2d` (Function) — used by 8 other symbols
+- `BlockConfig` (Class) — used by 7 other symbols
+- `FilmConditioning` (Class) — used by 5 other symbols
+- `round_filters` (Function) — used by 4 other symbols
+- `IdentityLayer` (Class) — used by 3 other symbols</div>
+        </section>
+
+        <!-- How to Contribute -->
+        <section id="how-to-contribute">
+            <h2>How to Contribute</h2>
+            <div class="card">## Contribution Guide
+
+Here's how to get started contributing to this codebase:
+
+1. **Start with entry points** — understand the main execution paths
+2. **Pick a module** — each module is relatively self-contained
+3. **Follow the edges** — understand how your module connects to others
+
+### Good First Areas
+
+- **Misc** — 15 symbols, cohesion 0%
+- **Action Film Classes** — 19 symbols, cohesion 13%
+- **Round Repeats Classes** — 10 symbols, cohesion 47%</div>
+        </section>
+
+        <!-- Why Trending -->
+        <section id="why-trending">
+            <h2>Why Trending</h2>
+            <div class="card">## Why This Project
+
+This project is written in python with 5 files. Explore the modules, architecture, and entry points to understand its design.</div>
+        </section>
+
+        <!-- Metrics -->
+        <section id="metrics">
+            <h2>Metrics Snapshot</h2>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value">5</div>
+                    <div class="metric-label">Files</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">1253</div>
+                    <div class="metric-label">SLOC</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">50</div>
+                    <div class="metric-label">Symbols</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">5.7</div>
+                    <div class="metric-label">Avg Complexity</div>
+                </div>
+            </div>
+
+            
+            <h3>Hotspot Files</h3>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/open_x_embodiment/models/rt1_inference_example.py</code></div>
+                <div class="card-meta">complexity: 6.2 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/open_x_embodiment/models/rt1.py</code></div>
+                <div class="card-meta">complexity: 6.1 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/open_x_embodiment/models/efficientnet.py</code></div>
+                <div class="card-meta">complexity: 5.9 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/open_x_embodiment/models/token_learner.py</code></div>
+                <div class="card-meta">complexity: 5.7 &middot; churn: 0</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title"><code>/Users/bm/carokia-repos/open_x_embodiment/models/film_conditioning.py</code></div>
+                <div class="card-meta">complexity: 4.5 &middot; churn: 0</div>
+            </div>
+            
+            
+        </section>
+
+        <!-- Deep Dive -->
+        <section id="deep-dive">
+            <h2>Deep Dive</h2>
+
+            
+            <details>
+                <summary>Communities / Modules (6)</summary>
+                <div class="content">
+                
+                    <div class="card">
+                        <div class="card-title">action_film_classes</div>
+                        <div class="card-meta">19 symbols</div>
+                        <p>## Module: Action Film Classes
+
+This module contains **19 symbols** with a cohesion score of **13%** and **0 external connections**.
+
+### Types
+
+- `EfficientNetWithFilm`
+- `FilmConditioning`
+- `TransformerBlock`
+- `TokenLearnerModuleV11`
+- `RT1`
+- `RT1Policy`
+- `DepthwiseConv`
+- `IdentityLayer`
+- `MlpBlock`
+- `Transformer`
+- `FFNOptions`
+
+### Functions
+
+- `action`
+- `__init__`
+- `_get_action_index_for_token`
+- `_construct_attn_mask`
+- `main`
+- `__call__`
+- `tokenize_action`
+- `__call__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: RT1Policy, __init__, action, main, IdentityLayer</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">misc</div>
+                        <div class="card-meta">15 symbols</div>
+                        <p>## Module: Misc
+
+This module contains **15 symbols** with a cohesion score of **0%** and **0 external connections**.
+
+### Types
+
+- `TokenLearnerModuleV11`
+
+### Functions
+
+- `__call__`
+- `__init__`
+- `__call__`
+- `__call__`
+- `__call__`
+- `__call__`
+- `__call__`
+- `tokenize_image`
+- `__call__`
+- `__call__`
+- ...and 4 more</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: __call__, __call__, TokenLearnerModuleV11, __call__, __call__</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">round_repeats_classes</div>
+                        <div class="card-meta">10 symbols</div>
+                        <p>## Module: Round Repeats Classes
+
+This module contains **10 symbols** with a cohesion score of **47%** and **2 external connections**.
+
+### Types
+
+- `SqueezeExcite`
+- `Stem`
+- `Head`
+- `MBConvBlock`
+- `ModelConfig`
+
+### Functions
+
+- `round_repeats`
+- `stochastic_depth`
+- `round_filters`
+- `__call__`
+- `conv2d`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: ModelConfig, round_filters, round_repeats, conv2d, stochastic_depth</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">run_action</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Run Action
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Functions
+
+- `detokenize_action`
+- `_run_action_inference`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: _run_action_inference, detokenize_action</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">setup_classes</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Setup Classes
+
+This module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.
+
+### Types
+
+- `ImageTokenizer`
+
+### Functions
+
+- `setup`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: ImageTokenizer, setup</p>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-title">init_config_classes</div>
+                        <div class="card-meta">2 symbols</div>
+                        <p>## Module: Init Config Classes
+
+This module contains **2 symbols** with a cohesion score of **700%** and **0 external connections**.
+
+### Types
+
+- `BlockConfig`
+
+### Functions
+
+- `__init__`</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;color:#8b949e">Key: BlockConfig, __init__</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>Anti-Patterns (9)</summary>
+                <div class="content">
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'conv2d' is 66 lines long</p>
+                    </div>
+                
+                    <div class="card severity-warning">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">warning &middot; <code></code></div>
+                        <p>'__call__' is 105 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__call__' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__call__' is 55 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'tokenize_action' is 51 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">long_method</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>'__call__' is 85 lines long</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 6 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 20 public symbols</p>
+                    </div>
+                
+                    <div class="card severity-info">
+                        <div class="card-title">test_gap</div>
+                        <div class="card-meta">info &middot; <code></code></div>
+                        <p>No test file found — this file has 17 public symbols</p>
+                    </div>
+                
+                </div>
+            </details>
+            
+
+            
+            <details>
+                <summary>File Tree</summary>
+                <div class="content">
+                    <pre>├── /Users/bm/carokia-repos/open_x_embodiment/models/efficientnet.py
+├── /Users/bm/carokia-repos/open_x_embodiment/models/film_conditioning.py
+├── /Users/bm/carokia-repos/open_x_embodiment/models/rt1.py
+├── /Users/bm/carokia-repos/open_x_embodiment/models/rt1_inference_example.py
+└── /Users/bm/carokia-repos/open_x_embodiment/models/token_learner.py</pre>
+                </div>
+            </details>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid #21262d;text-align:center;color:#8b949e;font-size:0.75rem;">
+        <p>Generated by <strong style="color:#58a6ff;">Codeilus</strong> &middot; 2026-03-21 09:24 UTC</p>
+    </footer>
+
+    <!-- Inline data for programmatic access -->
+    <script id="codeilus-data" type="application/json">{"repo_name":"open_x_embodiment","repo_description":null,"language_badges":[{"language":"python","percentage":100.0,"color":"#3572A5"}],"overview":"## Project Overview\n\nThis project contains **5 files** with **50 symbols** across **1253 lines of code**, written in **python**.\n\nThe codebase is organized into **6 functional modules** (automatically detected communities) with **9 entry points**.\n\n### Modules at a Glance\n\n- **Action Film Classes** — 19 symbols (cohesion: 13%)\n- **Misc** — 15 symbols (cohesion: 0%)\n- **Round Repeats Classes** — 10 symbols (cohesion: 47%)\n- **Run Action** — 2 symbols (cohesion: 100%)\n- **Setup Classes** — 2 symbols (cohesion: 100%)\n- **Init Config Classes** — 2 symbols (cohesion: 700%)\n\n### Key Entry Points\n\n- `main` — main function, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers, calls others\n- `__init__` — module entry, zero callers\n- `_run_action_inference` — zero callers, calls others","architecture_mermaid":"","reading_order":[{"path":"**`main`** (Function)","reason":"main function, zero callers, calls others *(score: 1.5)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers, calls others *(score: 1.0)*","language":""},{"path":"**`__init__`** (Function)","reason":"module entry, zero callers *(score: 0.7)*","language":""},{"path":"**`_run_action_inference`** (Function)","reason":"zero callers, calls others *(score: 0.5)*","language":""},{"path":"**`__call__`** (Function)","reason":"zero callers, calls others *(score: 0.5)*","language":""},{"path":"**`__call__`** (Function)","reason":"zero callers, calls others *(score: 0.5)*","language":""},{"path":"**`setup`** (Function)","reason":"zero callers, calls others *(score: 0.5)*","language":""}],"entry_points":[],"architecture_narrative":"## Architecture\n\nThe codebase consists of **50 symbols** connected by **54 relationships** across **6 modules**.\n\n### Relationship Types\n\n- **49** function calls\n- **5** import dependencies\n\n### Module Hierarchy\n\n- **Action Film Classes** (19 symbols) — includes: `EfficientNetWithFilm`, `action`, `FilmConditioning`\n- **Misc** (15 symbols) — includes: `__call__`, `__init__`, `__call__`\n- **Round Repeats Classes** (10 symbols) — includes: `round_repeats`, `SqueezeExcite`, `stochastic_depth`\n- **Run Action** (2 symbols) — includes: `detokenize_action`, `_run_action_inference`\n- **Setup Classes** (2 symbols) — includes: `ImageTokenizer`, `setup`\n- **Init Config Classes** (2 symbols) — includes: `__init__`, `BlockConfig`","extension_guide":"## Extension Guide\n\nTo extend this codebase, look at the modules with the highest cohesion — they represent well-defined functional areas where new features can be added cleanly.\n\n### Key Extension Points (high fan-in)\n\n- `conv2d` (Function) — used by 8 other symbols\n- `BlockConfig` (Class) — used by 7 other symbols\n- `FilmConditioning` (Class) — used by 5 other symbols\n- `round_filters` (Function) — used by 4 other symbols\n- `IdentityLayer` (Class) — used by 3 other symbols","contribution_guide":"## Contribution Guide\n\nHere's how to get started contributing to this codebase:\n\n1. **Start with entry points** — understand the main execution paths\n2. **Pick a module** — each module is relatively self-contained\n3. **Follow the edges** — understand how your module connects to others\n\n### Good First Areas\n\n- **Misc** — 15 symbols, cohesion 0%\n- **Action Film Classes** — 19 symbols, cohesion 13%\n- **Round Repeats Classes** — 10 symbols, cohesion 47%","why_trending":"## Why This Project\n\nThis project is written in python with 5 files. Explore the modules, architecture, and entry points to understand its design.","metrics_snapshot":{"total_files":5,"total_sloc":1253,"total_symbols":50,"avg_complexity":5.655098039215686,"modularity_q":0.0,"hotspot_files":[{"path":"/Users/bm/carokia-repos/open_x_embodiment/models/rt1_inference_example.py","heatmap_score":0.0,"complexity":6.2,"churn":0},{"path":"/Users/bm/carokia-repos/open_x_embodiment/models/rt1.py","heatmap_score":0.0,"complexity":6.0588235294117645,"churn":0},{"path":"/Users/bm/carokia-repos/open_x_embodiment/models/efficientnet.py","heatmap_score":0.0,"complexity":5.85,"churn":0},{"path":"/Users/bm/carokia-repos/open_x_embodiment/models/token_learner.py","heatmap_score":0.0,"complexity":5.666666666666667,"churn":0},{"path":"/Users/bm/carokia-repos/open_x_embodiment/models/film_conditioning.py","heatmap_score":0.0,"complexity":4.5,"churn":0}]},"file_tree":"├── /Users/bm/carokia-repos/open_x_embodiment/models/efficientnet.py\n├── /Users/bm/carokia-repos/open_x_embodiment/models/film_conditioning.py\n├── /Users/bm/carokia-repos/open_x_embodiment/models/rt1.py\n├── /Users/bm/carokia-repos/open_x_embodiment/models/rt1_inference_example.py\n└── /Users/bm/carokia-repos/open_x_embodiment/models/token_learner.py","communities":[{"label":"action_film_classes","summary":"## Module: Action Film Classes\n\nThis module contains **19 symbols** with a cohesion score of **13%** and **0 external connections**.\n\n### Types\n\n- `EfficientNetWithFilm`\n- `FilmConditioning`\n- `TransformerBlock`\n- `TokenLearnerModuleV11`\n- `RT1`\n- `RT1Policy`\n- `DepthwiseConv`\n- `IdentityLayer`\n- `MlpBlock`\n- `Transformer`\n- `FFNOptions`\n\n### Functions\n\n- `action`\n- `__init__`\n- `_get_action_index_for_token`\n- `_construct_attn_mask`\n- `main`\n- `__call__`\n- `tokenize_action`\n- `__call__`","member_count":19,"key_symbols":["RT1Policy","__init__","action","main","IdentityLayer"]},{"label":"misc","summary":"## Module: Misc\n\nThis module contains **15 symbols** with a cohesion score of **0%** and **0 external connections**.\n\n### Types\n\n- `TokenLearnerModuleV11`\n\n### Functions\n\n- `__call__`\n- `__init__`\n- `__call__`\n- `__call__`\n- `__call__`\n- `__call__`\n- `__call__`\n- `tokenize_image`\n- `__call__`\n- `__call__`\n- ...and 4 more","member_count":15,"key_symbols":["__call__","__call__","TokenLearnerModuleV11","__call__","__call__"]},{"label":"round_repeats_classes","summary":"## Module: Round Repeats Classes\n\nThis module contains **10 symbols** with a cohesion score of **47%** and **2 external connections**.\n\n### Types\n\n- `SqueezeExcite`\n- `Stem`\n- `Head`\n- `MBConvBlock`\n- `ModelConfig`\n\n### Functions\n\n- `round_repeats`\n- `stochastic_depth`\n- `round_filters`\n- `__call__`\n- `conv2d`","member_count":10,"key_symbols":["ModelConfig","round_filters","round_repeats","conv2d","stochastic_depth"]},{"label":"run_action","summary":"## Module: Run Action\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Functions\n\n- `detokenize_action`\n- `_run_action_inference`","member_count":2,"key_symbols":["_run_action_inference","detokenize_action"]},{"label":"setup_classes","summary":"## Module: Setup Classes\n\nThis module contains **2 symbols** with a cohesion score of **100%** and **0 external connections**.\n\n### Types\n\n- `ImageTokenizer`\n\n### Functions\n\n- `setup`","member_count":2,"key_symbols":["ImageTokenizer","setup"]},{"label":"init_config_classes","summary":"## Module: Init Config Classes\n\nThis module contains **2 symbols** with a cohesion score of **700%** and **0 external connections**.\n\n### Types\n\n- `BlockConfig`\n\n### Functions\n\n- `__init__`","member_count":2,"key_symbols":["BlockConfig","__init__"]}],"patterns":[{"kind":"long_method","severity":"info","message":"'conv2d' is 66 lines long","file_path":""},{"kind":"long_method","severity":"warning","message":"'__call__' is 105 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__call__' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__call__' is 55 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'tokenize_action' is 51 lines long","file_path":""},{"kind":"long_method","severity":"info","message":"'__call__' is 85 lines long","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 6 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 20 public symbols","file_path":""},{"kind":"test_gap","severity":"info","message":"No test file found — this file has 17 public symbols","file_path":""}]}</script>
+
+    <!-- Mermaid initialization -->
+    <script>
+    (function() {
+        var mermaidEls = document.querySelectorAll('.mermaid');
+        if (mermaidEls.length === 0) return;
+        // Load mermaid from CDN as fallback
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        s.onload = function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
+</body>
+</html>

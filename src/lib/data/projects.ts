@@ -55,12 +55,12 @@ export const projects: Project[] = [
 	// Walking
 	{
 		name: 'StanfordQuadruped',
-		slug: 'stanford-quadruped',
+		slug: 'stanfordquadruped',
 		description: 'Stanford Pupper quadruped robot dog',
 		domain: 'walking',
 		github: 'https://github.com/carokia-robotics/StanfordQuadruped',
-		status: 'coming-soon',
-		learnUrl: '/carokia-learn/projects/stanford-quadruped.html'
+		status: 'ready',
+		learnUrl: '/carokia-learn/projects/stanfordquadruped.html'
 	},
 	{
 		name: 'Cheetah-Software',
@@ -68,7 +68,7 @@ export const projects: Project[] = [
 		description: 'MIT Mini Cheetah dynamic quadruped',
 		domain: 'walking',
 		github: 'https://github.com/carokia-robotics/Cheetah-Software',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/cheetah-software.html'
 	},
 	{
@@ -77,17 +77,17 @@ export const projects: Project[] = [
 		description: 'Multi-robot quadruped framework',
 		domain: 'walking',
 		github: 'https://github.com/carokia-robotics/champ',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/champ.html'
 	},
 	{
 		name: 'OpenCat',
-		slug: 'opencat',
+		slug: 'opencat-quadruped-robot',
 		description: 'Arduino/ESP32 quadruped robot pet',
 		domain: 'walking',
-		github: 'https://github.com/carokia-robotics/OpenCat',
-		status: 'coming-soon',
-		learnUrl: '/carokia-learn/projects/opencat.html'
+		github: 'https://github.com/carokia-robotics/OpenCat-Quadruped-Robot',
+		status: 'ready',
+		learnUrl: '/carokia-learn/projects/opencat-quadruped-robot.html'
 	},
 	{
 		name: 'upkie',
@@ -95,7 +95,7 @@ export const projects: Project[] = [
 		description: 'Wheeled biped balancing robot',
 		domain: 'walking',
 		github: 'https://github.com/carokia-robotics/upkie',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/upkie.html'
 	},
 
@@ -106,7 +106,7 @@ export const projects: Project[] = [
 		description: 'Multi-vehicle autopilot (copter, plane, rover, sub)',
 		domain: 'flying',
 		github: 'https://github.com/carokia-robotics/ardupilot',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/ardupilot.html'
 	},
 	{
@@ -115,7 +115,7 @@ export const projects: Project[] = [
 		description: 'Professional drone flight stack',
 		domain: 'flying',
 		github: 'https://github.com/carokia-robotics/PX4-Autopilot',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/px4-autopilot.html'
 	},
 	{
@@ -124,7 +124,7 @@ export const projects: Project[] = [
 		description: 'Nano quadcopter swarm platform',
 		domain: 'flying',
 		github: 'https://github.com/carokia-robotics/crazyflie-firmware',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/crazyflie-firmware.html'
 	},
 
@@ -135,7 +135,7 @@ export const projects: Project[] = [
 		description: 'Open-source OS for marine robots',
 		domain: 'underwater',
 		github: 'https://github.com/carokia-robotics/BlueOS',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/blueos.html'
 	},
 
@@ -146,7 +146,7 @@ export const projects: Project[] = [
 		description: '3D-printed 6-DOF robot arm',
 		domain: 'arms',
 		github: 'https://github.com/carokia-robotics/PAROL6-Desktop-robot-arm',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/parol6-desktop-robot-arm.html'
 	},
 	{
@@ -155,7 +155,7 @@ export const projects: Project[] = [
 		description: 'Hugging Face LeRobot collaborative arm',
 		domain: 'arms',
 		github: 'https://github.com/carokia-robotics/SO-ARM100',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/so-arm100.html'
 	},
 
@@ -166,7 +166,7 @@ export const projects: Project[] = [
 		description: 'End-to-end robot learning (imitation + RL)',
 		domain: 'ai',
 		github: 'https://github.com/carokia-robotics/lerobot',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/lerobot.html'
 	},
 	{
@@ -175,7 +175,7 @@ export const projects: Project[] = [
 		description: 'LLM integration for ROS robots',
 		domain: 'ai',
 		github: 'https://github.com/carokia-robotics/ROS-LLM',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/ros-llm.html'
 	},
 	{
@@ -184,7 +184,7 @@ export const projects: Project[] = [
 		description: 'Pure-Rust ML inference framework',
 		domain: 'ai',
 		github: 'https://github.com/carokia-robotics/candle',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/candle.html'
 	},
 
@@ -195,7 +195,7 @@ export const projects: Project[] = [
 		description: 'GPU-accelerated robot learning',
 		domain: 'simulation',
 		github: 'https://github.com/carokia-robotics/mujoco_playground',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/mujoco-playground.html'
 	},
 	{
@@ -204,7 +204,7 @@ export const projects: Project[] = [
 		description: 'ANYmal/legged robot training',
 		domain: 'simulation',
 		github: 'https://github.com/carokia-robotics/legged_gym',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/legged-gym.html'
 	},
 
@@ -215,7 +215,7 @@ export const projects: Project[] = [
 		description: 'Dataflow-oriented robotics architecture',
 		domain: 'rust',
 		github: 'https://github.com/carokia-robotics/dora',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/dora.html'
 	},
 	{
@@ -224,7 +224,7 @@ export const projects: Project[] = [
 		description: 'Universal communication middleware',
 		domain: 'rust',
 		github: 'https://github.com/carokia-robotics/zenoh',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/zenoh.html'
 	},
 	{
@@ -233,7 +233,7 @@ export const projects: Project[] = [
 		description: 'Rust LLM agent framework',
 		domain: 'rust',
 		github: 'https://github.com/carokia-robotics/rig',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/rig.html'
 	},
 	{
@@ -242,7 +242,7 @@ export const projects: Project[] = [
 		description: 'OpenCV bindings for Rust',
 		domain: 'rust',
 		github: 'https://github.com/carokia-robotics/opencv-rust',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/opencv-rust.html'
 	},
 
@@ -253,7 +253,7 @@ export const projects: Project[] = [
 		description: 'Foxglove robotics observability platform',
 		domain: 'middleware',
 		github: 'https://github.com/carokia-robotics/studio',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/studio.html'
 	},
 
@@ -264,7 +264,7 @@ export const projects: Project[] = [
 		description: 'Autonomous security robot',
 		domain: 'security',
 		github: 'https://github.com/carokia-robotics/securbot',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/securbot.html'
 	},
 
@@ -275,7 +275,7 @@ export const projects: Project[] = [
 		description: 'VESC open motor controller firmware',
 		domain: 'hardware',
 		github: 'https://github.com/carokia-robotics/bldc',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/bldc.html'
 	},
 	{
@@ -284,7 +284,7 @@ export const projects: Project[] = [
 		description: 'Field Oriented Control for Arduino',
 		domain: 'hardware',
 		github: 'https://github.com/carokia-robotics/Arduino-FOC',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/arduino-foc.html'
 	},
 
@@ -295,7 +295,7 @@ export const projects: Project[] = [
 		description: '1M+ robot trajectories from 22 robots',
 		domain: 'datasets',
 		github: 'https://github.com/carokia-robotics/open_x_embodiment',
-		status: 'coming-soon',
+		status: 'ready',
 		learnUrl: '/carokia-learn/projects/open-x-embodiment.html'
 	}
 ];
